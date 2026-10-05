@@ -230,7 +230,7 @@ const S = {
   mCible: 'clairs', mSeuil: 50, mCouv: 45, mPrio: 30,
   mCouleur: 'photo', mNiveaux: 100, mContraste: 50, mAccent: 35, mSep: 45,
   mDecal: 0, mRefresh: 40, mEchoLong: 60, mEchoDir: 'horizontal',
-  mFen: 30, mFenTaille: 40, mFenCadre: 'oui', mOpa: 100, mFusion: 'normal',
+  mFen: 30, mFenTaille: 40, mFenVar: 40, mZoom: 35, mFenForme: 'mixte', mFenPlace: 'proche', mFenCible: 'forts', mFenPix: 0, mFenTon: 'photo', mLien: 'coude', mLienEp: 25, mFenRepere: 'oui', mFenLabel: 'oui', mFenCadre: 'oui', mOpa: 100, mFusion: 'normal',
   // Vitre
   vitre: 'aucune', vEclats: 45, vDecal: 40, vFissures: 70, vReflets: 40,
   // Prisme
@@ -253,16 +253,16 @@ const PALETTES = {
 
 // Les styles éteignent les couches spéciales sauf celles qu'ils allument
 // Préréglages Pixel memory (complets : chaque réglage est défini)
-const MEM_BASE = { memoire: 'archive', mRendu: 'bloc', mCell: 30, mRatio: 50, mEcart: 0, mEntropie: 0, mCible: 'clairs', mSeuil: 50, mCouv: 45, mPrio: 30,
+const MEM_BASE = { memoire: 'fenetres', mRendu: 'bloc', mCell: 30, mRatio: 50, mEcart: 0, mEntropie: 0, mCible: 'clairs', mSeuil: 50, mCouv: 45, mPrio: 30,
   mCouleur: 'photo', mNiveaux: 100, mContraste: 50, mAccent: 35, mSep: 45, mDecal: 0, mRefresh: 40, mEchoLong: 60, mEchoDir: 'horizontal',
-  mFen: 30, mFenTaille: 40, mFenCadre: 'oui', mOpa: 100, mFusion: 'normal' };
+  mFen: 30, mFenTaille: 40, mFenVar: 40, mZoom: 35, mFenForme: 'mixte', mFenPlace: 'proche', mFenCible: 'forts', mFenPix: 0, mFenTon: 'photo', mLien: 'coude', mLienEp: 25, mFenRepere: 'oui', mFenLabel: 'oui', mFenCadre: 'oui', mOpa: 100, mFusion: 'normal' };
 const MEM_PRESETS = {
-  douce:     { nom: 'Douce',     v: { mCell: 22, mCouv: 40, mSeuil: 45 } },
-  brute:     { nom: 'Brute',     v: { mCell: 26, mCouv: 100, mSeuil: 55, mCouleur: 'palette', mContraste: 65, mSep: 0, mAccent: 55, mOpa: 70, mFen: 40 } },
-  corrompue: { nom: 'Corrompue', v: { mCell: 24, mRatio: 70, mCible: 'tout', mCouv: 60, mDecal: 60, mEntropie: 25, mEcart: 8, mNiveaux: 20, mRefresh: 70, mSep: 30 } },
-  points:    { nom: 'Points',    v: { mRendu: 'point', mCell: 16, mCible: 'tout', mCouv: 75, mEcart: 12, mEntropie: 20, mSep: 0, mFen: 0 } },
-  glyphes:   { nom: 'Glyphes',   v: { memoire: 'glyphes', mCell: 18, mCible: 'tout', mCouv: 60, mCouleur: 'palette', mFen: 0 } },
-  echo:      { nom: 'Écho',      v: { memoire: 'echo', mCell: 14, mCouv: 50, mEchoLong: 70, mFen: 0 } }
+  zoom:      { nom: 'Zoom',      v: { mFen: 38, mFenTaille: 45, mFenVar: 40, mZoom: 35 } },
+  planche:   { nom: 'Planche',   v: { mFen: 63, mFenTaille: 35, mFenVar: 0, mZoom: 50, mFenForme: 'carre', mFenPlace: 'bord', mLien: 'droit', mLienEp: 15 } },
+  pixel:     { nom: 'Pixel',     v: { mFen: 44, mFenTaille: 55, mFenVar: 50, mZoom: 25, mFenPix: 55, mFenTon: 'nb', mFenPlace: 'libre' } },
+  blocs:     { nom: 'Blocs',     v: { memoire: 'archive', mCell: 55, mCouv: 35, mSep: 60, mAccent: 50, mFen: 32, mZoom: 40 } },
+  corrompue: { nom: 'Corrompue', v: { memoire: 'archive', mCell: 40, mRatio: 70, mCible: 'tout', mCouv: 55, mDecal: 60, mEntropie: 25, mEcart: 8, mNiveaux: 20, mRefresh: 70, mSep: 30, mFen: 25 } },
+  echo:      { nom: 'Écho',      v: { memoire: 'echo', mCell: 25, mCouv: 50, mEchoLong: 70, mFen: 19 } }
 };
 const memPreset = k => Object.assign({}, MEM_BASE, MEM_PRESETS[k].v);
 
@@ -273,8 +273,9 @@ const STYLES = {
   plan: { nom: 'Plan technique', v: { couleur: 'teinte', opacite: 45, contours: 25, niveaux: 25, densite: 65, seuil: 20, liens: 'delaunay', distance: 35, epaisseur: 18, forme: 'crochets', taille: 34, lignes: 25, grain: 10, annot: 'oui', cadre: 'oui', palette: 'cobalt', grille: 'mesure', gModules: 45, gOpa: 35 } },
   radial: { nom: 'Spécimen radial', v: { couleur: 'nb', opacite: 80, densite: 45, seuil: 24, liens: 'delaunay', distance: 30, epaisseur: 12, forme: 'mixte', taille: 26, lignes: 20, grain: 10, annot: 'oui', cadre: 'oui', palette: 'rouge', chaine: 'oui', cNb: 45, cAngle: 30, cRayon: 35, cRatio: 60 } },
   dither: { nom: 'Dither cobalt', v: { couleur: 'nb', opacite: 100, densite: 35, seuil: 26, liens: 'contour', distance: 40, epaisseur: 14, forme: 'mixte', taille: 26, lignes: 10, grain: 0, annot: 'oui', cadre: 'oui', palette: 'cobalt', dither: 'atkinson', dGrain: 22, dSeuil: 50, dOpa: 100, dFusion: 'normal' } },
-  memoireDouce: { nom: 'Mémoire douce', v: Object.assign(memPreset('douce'), { couleur: 'original', opacite: 100, densite: 30, seuil: 26, liens: 'proximite', distance: 28, epaisseur: 10, forme: 'mixte', taille: 22, lignes: 8, grain: 5, annot: 'oui', cadre: 'oui', palette: 'mono' }) },
-  memoire: { nom: 'Mémoire brute', v: Object.assign(memPreset('brute'), { couleur: 'nb', opacite: 75, densite: 40, seuil: 24, liens: 'proximite', distance: 30, epaisseur: 12, forme: 'mixte', taille: 26, lignes: 45, grain: 12, annot: 'oui', cadre: 'oui', palette: 'mono' }) },
+  memoireZoom: { nom: 'Mémoire zoom', v: Object.assign(memPreset('zoom'), { couleur: 'original', opacite: 100, densite: 30, seuil: 26, liens: 'contour', distance: 35, epaisseur: 10, forme: 'mixte', taille: 22, lignes: 10, grain: 6, annot: 'non', cadre: 'oui', palette: 'mono' }) },
+  planche: { nom: 'Planche contact', v: Object.assign(memPreset('planche'), { couleur: 'nb', opacite: 90, densite: 30, seuil: 26, liens: 'contour', distance: 35, epaisseur: 10, forme: 'mixte', taille: 22, lignes: 25, grain: 10, annot: 'non', cadre: 'oui', palette: 'cyan' }) },
+  memoire: { nom: 'Mémoire blocs', v: Object.assign(memPreset('blocs'), { couleur: 'original', opacite: 100, densite: 30, seuil: 26, liens: 'proximite', distance: 30, epaisseur: 10, forme: 'mixte', taille: 22, lignes: 15, grain: 8, annot: 'non', cadre: 'oui', palette: 'mono' }) },
   corrompue: { nom: 'Mémoire corrompue', v: Object.assign(memPreset('corrompue'), { couleur: 'original', opacite: 100, densite: 25, seuil: 28, liens: 'aucun', forme: 'crochets', taille: 22, lignes: 25, grain: 10, annot: 'oui', cadre: 'oui', palette: 'cyan' }) },
   miroir: { nom: 'Miroir brisé', v: { couleur: 'nb', opacite: 92, densite: 30, seuil: 26, liens: 'contour', distance: 35, epaisseur: 12, forme: 'mixte', taille: 22, lignes: 20, grain: 10, annot: 'non', cadre: 'oui', palette: 'cyan', vitre: 'miroir', vEclats: 40, vDecal: 50, vFissures: 70, vReflets: 50 } },
   vitrail: { nom: 'Vitrail', v: { couleur: 'original', opacite: 100, densite: 15, seuil: 35, liens: 'aucun', forme: 'cercle', taille: 10, lignes: 0, grain: 6, annot: 'non', cadre: 'non', palette: 'solaire', vitre: 'vitrail', vEclats: 55, vFissures: 60, vReflets: 40 } },
@@ -303,6 +304,7 @@ const [mCv, mCtx] = mk2d();             // pixel memory
 const [tCv, tCtx] = mk2d(true);         // petite image pour les cellules
 const [maskCv, maskCtx] = mk2d(true);   // masque visage
 const [gCv, gCtx] = mk2d();             // copie pour la vitre
+const [fCv, fCtx] = mk2d();             // fenêtre pixelisée
 const [pCv, pCtx] = mk2d();             // copie pour le prisme
 const CHN = [mk2d(), mk2d(), mk2d()];   // canaux rouge, vert, bleu
 
@@ -1123,7 +1125,7 @@ function memSlot(anim){
 }
 // Taille des cellules (proportion 50 = carré)
 function memGeom(u){
-  const p = Math.max(3, (5 + S.mCell / 100 * 55) * u), f = Math.sqrt(Math.pow(2, (S.mRatio - 50) / 25));
+  const p = Math.max(3, (6 + Math.pow(S.mCell / 100, 1.6) * 180) * u), f = Math.sqrt(Math.pow(2, (S.mRatio - 50) / 25));
   return { cw: Math.max(2, p * f), ch: Math.max(2, p / f) };
 }
 const MEM_KEYS = ['memoire', 'mRendu', 'mCell', 'mRatio', 'mEcart', 'mEntropie', 'mCible', 'mSeuil', 'mCouv', 'mPrio', 'mCouleur', 'mNiveaux', 'mContraste', 'mAccent', 'mSep', 'mDecal', 'mRefresh'];
@@ -1225,29 +1227,137 @@ function drawEcho(W, H, u, anim){
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
 }
 
-// Fenêtres mémoire : morceaux nets de la photo, déplacés et encadrés
-function drawWindows(W, H, u, pal){
-  const n = Math.round(S.mFen / 100 * 8); if (!n || !nP) return;
-  const L = Math.max(W, H), used = [], size = 0.05 + S.mFenTaille / 100 * 0.25, cadre = S.mFenCadre === 'oui';
-  const cand = heroIdx.concat(Array.from({ length: nP }, (_, i) => i).sort((a, b) => PS[b] - PS[a]).slice(0, 60));
-  ctx.font = Math.round(8.5 * u) + 'px ' + MONO(); ctx.textBaseline = 'bottom';
-  for (const i of cand){
-    if (used.length >= n) break;
-    if (i < 0 || i >= nP || used.some(j => Math.hypot(QX[j] - QX[i], QY[j] - QY[i]) < L * size)) continue;
-    used.push(i);
-    const h1 = hash2(S.seed + 11, PC[i]), h2 = hash2(S.seed + 12, PC[i]);
-    const w = size * (0.7 + h1 * 0.6) * L, h = w * (0.55 + h2 * 0.6), x = QX[i], y = QY[i];
-    const ang = h2 * 6.2832, dist = w * 0.95;
-    const dx = clamp(x + Math.cos(ang) * dist - w / 2, 4 * u, W - w - 4 * u), dy = clamp(y + Math.sin(ang) * dist - h / 2, 4 * u, H - h - 4 * u);
-    ctx.globalAlpha = 1; drawSourceRect(ctx, x - w / 2, y - h / 2, w, h, dx, dy, w, h);
-    if (!cadre) continue;
-    ctx.lineWidth = Math.max(0.8, u); ctx.strokeStyle = pal.forme;
-    ctx.strokeRect(dx, dy, w, h);
-    ctx.globalAlpha = 0.4; ctx.strokeRect(x - w / 2, y - h / 2, w, h);
-    ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(dx + w / 2, dy + h / 2); ctx.stroke();
-    ctx.globalAlpha = 0.9; ctx.fillStyle = pal.forme; ctx.fillText('MEM-' + String(used.length).padStart(2, '0'), dx + 3 * u, dy - 3 * u);
+// Fenêtres mémoire : grands carrés qui montrent un morceau zoomé de la photo,
+// reliés par un trait à l'endroit d'où ils viennent
+function drawWindows(W, H, u, pal, t, w, aBass, anim){
+  const n = Math.round(S.mFen / 100 * 16); if (!n || !nP) return;
+  const Lm = Math.min(W, H), base = (0.08 + S.mFenTaille / 100 * 0.32) * Lm, zoom0 = 1 + S.mZoom / 100 * 3;
+  const r = mulberry32(S.seed * 53 + 7), m = 12 * u;
+
+  // 1. Points d'origine : les plus forts, ou au hasard, bien espacés
+  const all = Array.from({ length: nP }, (_, i) => i);
+  const order = S.mFenCible === 'hasard'
+    ? all.sort((a, b) => hash2(S.seed + 31, PC[a]) - hash2(S.seed + 31, PC[b]))
+    : heroIdx.concat(all.sort((a, b) => PS[b] - PS[a]));
+  const origins = [];
+  for (const i of order){
+    if (origins.length >= n) break;
+    if (i < 0 || i >= nP || origins.includes(i)) continue;
+    if (origins.some(j => Math.hypot(QX[j] - QX[i], QY[j] - QY[i]) < base * (S.mFenPlace === 'bord' ? 0.5 : 1.1))) continue;
+    origins.push(i);
   }
-  ctx.globalAlpha = 1;
+
+  // 2. Placement des fenêtres en évitant qu'elles se chevauchent
+  const placed = [];
+  const over = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+  const col = S.mFenPlace === 'bord';
+  const colW = base * 0.72, gapC = 8 * u;
+  const colRight = col && origins.reduce((s, i) => s + QX[i], 0) / Math.max(1, origins.length) < W / 2;
+  let colI = 0, colY = m + 18 * u;
+  origins.forEach((i, k) => {
+    const h1 = hash2(S.seed + 11, PC[i]), h2 = hash2(S.seed + 12, PC[i]), h3 = hash2(S.seed + 13, PC[i]);
+    const shape = S.mFenForme === 'mixte' ? (h3 < 0.5 ? 'carre' : 'rect') : S.mFenForme;
+    let ww = col ? colW : base * (1 - S.mFenVar / 100 * 0.65 * h1);
+    let hh = shape === 'carre' ? ww : ww * (0.55 + h2 * 0.25);
+    const ox = QX[i], oy = QY[i];
+    let best;
+    if (col){
+      if (colY + hh > H - m - 18 * u){ colI++; colY = m + 18 * u; }
+      const x = colRight ? W - m - ww - colI * (ww + gapC) : m + colI * (ww + gapC);
+      best = { x, y: colY, w: ww, h: hh }; colY += hh + gapC;
+    } else {
+      let bs = Infinity;
+      const tries = S.mFenPlace === 'libre' ? 24 : 12;
+      for (let a = 0; a < tries; a++){
+        let x, y;
+        if (S.mFenPlace === 'libre'){ x = r() * (W - ww); y = r() * (H - hh); }
+        else {
+          const ang = h2 * 6.2832 + a * Math.PI / 6, dist = (ww + hh) / 2 * (0.85 + 0.5 * h3);
+          x = ox + Math.cos(ang) * dist - ww / 2; y = oy + Math.sin(ang) * dist - hh / 2;
+        }
+        const c = { x: clamp(x, m, W - ww - m), y: clamp(y, m, H - hh - m), w: ww, h: hh };
+        let sc = 0;
+        for (const p of placed) sc += over(c, p) + over(c, p.src) * 0.5;
+        sc += Math.hypot(c.x + ww / 2 - ox, c.y + hh / 2 - oy) * (S.mFenPlace === 'libre' ? 0.5 : 2);
+        if (sc < bs){ bs = sc; best = c; }
+      }
+    }
+    // Zoom (respire avec le mouvement et les basses)
+    let z = zoom0;
+    if (anim) z *= 1 + 0.06 * Math.sin(t * w + k * 1.7) + aBass * 0.35;
+    const sw = Math.min(W, best.w / z), sh = Math.min(H, best.h / z);
+    best.src = { x: clamp(ox - sw / 2, 0, W - sw), y: clamp(oy - sh / 2, 0, H - sh), w: sw, h: sh };
+    best.ox = ox; best.oy = oy; best.z = z;
+    placed.push(best);
+  });
+
+  const lw = Math.max(0.8, (0.5 + S.mLienEp / 100 * 3) * u);
+  ctx.font = Math.round(9 * u) + 'px ' + MONO();
+
+  // 3. Liens (sous les fenêtres)
+  if (S.mLien !== 'aucun'){
+    const p = new Path2D(), dots = new Path2D(), ds = 2.5 * u;
+    for (const b of placed){
+      const s = b.src, sx = s.x + s.w / 2, sy = s.y + s.h / 2, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+      if (over(b, s) > 0.6 * s.w * s.h) continue;
+      // Départ au bord du repère d'origine, arrivée au bord de la fenêtre
+      const ax = clamp(cx, s.x, s.x + s.w), ay = clamp(cy, s.y, s.y + s.h);
+      let ex, ey;
+      if (S.mLien === 'coude'){
+        if (ay >= b.y && ay <= b.y + b.h){ ex = ax < b.x ? b.x : b.x + b.w; ey = ay; p.moveTo(ax, ay); p.lineTo(ex, ey); }
+        else { ex = clamp(ax, b.x, b.x + b.w); ey = ay < b.y ? b.y : b.y + b.h; p.moveTo(ax, ay); p.lineTo(ex, ay); p.lineTo(ex, ey); }
+      } else { ex = clamp(ax, b.x, b.x + b.w); ey = clamp(ay, b.y, b.y + b.h); p.moveTo(ax, ay); p.lineTo(ex, ey); }
+      dots.rect(ax - ds, ay - ds, ds * 2, ds * 2); dots.rect(ex - ds, ey - ds, ds * 2, ds * 2);
+    }
+    ctx.globalAlpha = 0.85; ctx.lineWidth = lw; ctx.strokeStyle = pal.forme; ctx.stroke(p);
+    ctx.fillStyle = pal.ligne; ctx.fill(dots); ctx.globalAlpha = 1;
+  }
+
+  // 4. Repères d'origine (pointillés)
+  if (S.mFenRepere === 'oui'){
+    ctx.setLineDash([3 * u, 3 * u]); ctx.lineWidth = Math.max(0.8, u); ctx.strokeStyle = pal.ligne; ctx.globalAlpha = 0.9;
+    for (const b of placed) ctx.strokeRect(b.src.x, b.src.y, b.src.w, b.src.h);
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+  }
+
+  // 5. Fenêtres : contenu zoomé, pixelisé ou non, ton, cadre, étiquettes
+  placed.forEach((b, k) => {
+    const s = b.src, pix = S.mFenPix / 100;
+    ctx.globalAlpha = 1;
+    if (pix > 0.02){
+      const px = Math.max(2, pix * Math.min(b.w, b.h) / 8);
+      const tw = Math.max(1, Math.round(b.w / px)), th = Math.max(1, Math.round(b.h / px));
+      if (fCv.width !== tw || fCv.height !== th){ fCv.width = tw; fCv.height = th; }
+      drawSourceRect(fCtx, s.x, s.y, s.w, s.h, 0, 0, tw, th);
+      ctx.imageSmoothingEnabled = false; ctx.drawImage(fCv, 0, 0, tw, th, b.x, b.y, b.w, b.h); ctx.imageSmoothingEnabled = true;
+    } else drawSourceRect(ctx, s.x, s.y, s.w, s.h, b.x, b.y, b.w, b.h);
+    if (S.mFenTon !== 'photo'){
+      ctx.save(); ctx.beginPath(); ctx.rect(b.x, b.y, b.w, b.h); ctx.clip();
+      if (S.mFenTon === 'nb'){ ctx.globalCompositeOperation = 'saturation'; ctx.fillStyle = '#808080'; }
+      else { ctx.globalCompositeOperation = 'difference'; ctx.fillStyle = '#fff'; }
+      ctx.fillRect(b.x, b.y, b.w, b.h); ctx.restore();
+    }
+    if (S.mFenCadre === 'oui'){
+      ctx.lineWidth = Math.max(1, 1.3 * u); ctx.strokeStyle = pal.forme; ctx.strokeRect(b.x, b.y, b.w, b.h);
+      // Coins de viseur
+      const c = 7 * u, o = 4 * u, q = new Path2D();
+      [[b.x - o, b.y - o, 1, 1], [b.x + b.w + o, b.y - o, -1, 1], [b.x - o, b.y + b.h + o, 1, -1], [b.x + b.w + o, b.y + b.h + o, -1, -1]]
+        .forEach(([x, y, sx, sy]) => { q.moveTo(x + c * sx, y); q.lineTo(x, y); q.lineTo(x, y + c * sy); });
+      ctx.strokeStyle = pal.ligne; ctx.lineWidth = Math.max(0.8, u); ctx.stroke(q);
+    }
+  });
+  // 6. Étiquettes en dernier, pour qu'aucune fenêtre ne les recouvre
+  if (S.mFenLabel === 'oui') placed.forEach((b, k) => {
+    {
+      ctx.fillStyle = pal.forme; ctx.globalAlpha = 0.95;
+      const top = b.y - 7 * u > 12 * u;
+      ctx.textBaseline = top ? 'bottom' : 'top';
+      ctx.fillText('MEM-' + String(k + 1).padStart(2, '0') + '  ×' + b.z.toFixed(1), b.x, top ? b.y - 7 * u : b.y + b.h + 7 * u);
+      ctx.fillStyle = pal.ligne; ctx.textBaseline = 'top';
+      ctx.fillText(pad4(b.ox) + ' ' + pad4(b.oy), b.src.x, Math.min(H - 12 * u, b.src.y + b.src.h + 4 * u));
+      ctx.globalAlpha = 1;
+    }
+  });
 }
 
 /* ==========================================================
@@ -1622,7 +1732,7 @@ function render(now){
   }
 
   // 12. Fenêtres mémoire
-  if (S.memoire !== 'aucune') drawWindows(W, H, u, pal);
+  if (S.memoire !== 'aucune') drawWindows(W, H, u, pal, t, w, aBass, anim);
 
   // 13. Trame et grain (les aigus les renforcent)
   if (S.lignes > 0){ ctx.globalAlpha = Math.min(1, S.lignes / 100 * 0.45 + aHigh * 0.25); ctx.fillStyle = scanPattern(u); ctx.fillRect(0, 0, W, H); }
@@ -1869,6 +1979,8 @@ function setExportUI(on){
 const OUI_NON = [['oui', 'Oui'], ['non', 'Non']];
 const MEM_ON = () => S.memoire !== 'aucune';
 const MEM_CELLS = () => S.memoire === 'archive' || S.memoire === 'glyphes';
+const MEM_PIX = () => S.memoire === 'archive' || S.memoire === 'glyphes' || S.memoire === 'echo';
+const WIN_ON = () => S.memoire !== 'aucune' && S.mFen > 0;
 const SECTIONS = [
   { t: 'Style', key: 'style', items: [
     { html: '<div class="styles" id="styles"></div>' },
@@ -1916,17 +2028,33 @@ const SECTIONS = [
     { seg: 'dFusion', label: 'Fusion', cols: 2, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superposition']], dep: ['dither', 'aucun'] } ] },
   { t: 'Pixel memory', key: 'memoire', badge: 'memoire', items: [
     { html: '<div class="head"><span>Préréglages</span></div><div class="chips" id="memChips"></div>' },
-    { seg: 'memoire', label: 'Programme', cols: 4, opts: [['aucune', 'Aucun'], ['archive', 'Cellules'], ['glyphes', 'Glyphes'], ['echo', 'Écho']] },
-    { sub: 'Cellules', only: MEM_ON },
+    { seg: 'memoire', label: 'Programme', cols: 3, opts: [['aucune', 'Aucun'], ['fenetres', 'Fenêtres'], ['archive', 'Blocs'], ['glyphes', 'Glyphes'], ['echo', 'Écho']] },
+    { sub: 'Fenêtres de zoom', only: MEM_ON },
+    { range: 'mFen', label: 'Nombre de fenêtres', min: 0, only: MEM_ON },
+    { range: 'mFenTaille', label: 'Taille des fenêtres', only: WIN_ON },
+    { range: 'mFenVar', label: 'Variation de taille', min: 0, only: WIN_ON },
+    { range: 'mZoom', label: 'Zoom', min: 0, only: WIN_ON },
+    { seg: 'mFenForme', label: 'Forme', cols: 3, opts: [['carre', 'Carré'], ['rect', 'Rectangle'], ['mixte', 'Mixte']], only: WIN_ON },
+    { seg: 'mFenPlace', label: 'Placement', cols: 3, opts: [['proche', 'Près du point'], ['libre', 'Libre'], ['bord', 'En colonne']], only: WIN_ON },
+    { seg: 'mFenCible', label: 'Origine', cols: 2, opts: [['forts', 'Points forts'], ['hasard', 'Au hasard']], only: WIN_ON },
+    { range: 'mFenPix', label: 'Pixelisation dans les fenêtres', min: 0, only: WIN_ON },
+    { seg: 'mFenTon', label: 'Ton des fenêtres', cols: 3, opts: [['photo', 'Photo'], ['nb', 'N et B'], ['inverse', 'Inversé']], only: WIN_ON },
+    { sub: 'Liens et repères', only: WIN_ON },
+    { seg: 'mLien', label: 'Liens', cols: 3, opts: [['coude', 'Coudés'], ['droit', 'Droits'], ['aucun', 'Aucun']], only: WIN_ON },
+    { range: 'mLienEp', label: 'Épaisseur des liens', min: 0, only: () => WIN_ON() && S.mLien !== 'aucun' },
+    { seg: 'mFenRepere', label: "Repère d'origine", cols: 2, opts: OUI_NON, only: WIN_ON },
+    { seg: 'mFenCadre', label: 'Cadre', cols: 2, opts: OUI_NON, only: WIN_ON },
+    { seg: 'mFenLabel', label: 'Étiquettes et coordonnées', cols: 2, opts: OUI_NON, only: WIN_ON },
+    { sub: 'Blocs', only: MEM_CELLS },
     { seg: 'mRendu', label: 'Rendu', cols: 4, opts: [['bloc', 'Bloc'], ['contour', 'Contour'], ['point', 'Point'], ['barre', 'Barre']], only: () => S.memoire === 'archive' },
-    { range: 'mCell', label: 'Taille', only: MEM_ON },
-    { range: 'mRatio', label: 'Proportion (50 = carré)', min: 0, only: MEM_ON },
+    { range: 'mCell', label: 'Taille des blocs', only: MEM_PIX },
+    { range: 'mRatio', label: 'Proportion (50 = carré)', min: 0, only: MEM_PIX },
     { range: 'mEcart', label: 'Espacement', min: 0, only: MEM_CELLS },
     { range: 'mEntropie', label: 'Entropie (désordre)', min: 0, only: MEM_CELLS },
     { sub: 'Sélection', only: MEM_CELLS },
     { seg: 'mCible', label: 'Cibler', cols: 4, opts: [['clairs', 'Clairs'], ['sombres', 'Sombres'], ['contours', 'Contours'], ['tout', 'Tout']], only: MEM_CELLS },
     { range: 'mSeuil', label: 'Seuil de luminosité', only: () => MEM_CELLS() && (S.mCible === 'clairs' || S.mCible === 'sombres') },
-    { range: 'mCouv', label: 'Couverture', only: MEM_ON },
+    { range: 'mCouv', label: 'Couverture', only: MEM_PIX },
     { range: 'mPrio', label: 'Priorité aux contours', min: 0, only: MEM_CELLS },
     { sub: 'Couleur', only: MEM_CELLS },
     { seg: 'mCouleur', label: 'Couleur des cellules', cols: 4, opts: [['photo', 'Photo'], ['palette', 'Palette'], ['mono', 'N et B'], ['inverse', 'Inversée']], only: MEM_CELLS },
@@ -1934,20 +2062,16 @@ const SECTIONS = [
     { range: 'mContraste', label: 'Contraste (50 = normal)', min: 0, only: MEM_CELLS },
     { range: 'mAccent', label: 'Accent sur les contours', min: 0, only: MEM_CELLS },
     { range: 'mSep', label: 'Lignes entre les pixels', min: 0, only: () => S.memoire === 'archive' && S.mRendu === 'bloc' },
-    { sub: 'Mémoire', only: MEM_ON },
+    { sub: 'Mémoire', only: MEM_PIX },
     { range: 'mDecal', label: 'Décalage (mémoire corrompue)', min: 0, only: MEM_CELLS },
-    { range: 'mRefresh', label: 'Rafraîchissement en mouvement', min: 0, only: MEM_ON },
+    { range: 'mRefresh', label: 'Rafraîchissement en mouvement', min: 0, only: MEM_PIX },
     { sub: 'Traînées', only: () => S.memoire === 'echo' },
     { range: 'mEchoLong', label: 'Longueur', only: () => S.memoire === 'echo' },
     { seg: 'mEchoDir', label: 'Direction', cols: 2, opts: [['horizontal', 'Horizontale'], ['vertical', 'Verticale']], only: () => S.memoire === 'echo' },
-    { sub: 'Fenêtres mémoire', only: MEM_ON },
-    { range: 'mFen', label: 'Nombre de fenêtres', min: 0, only: MEM_ON },
-    { range: 'mFenTaille', label: 'Taille des fenêtres', only: () => S.memoire !== 'aucune' && S.mFen > 0 },
-    { seg: 'mFenCadre', label: 'Cadre et étiquette', cols: 2, opts: OUI_NON, only: () => S.memoire !== 'aucune' && S.mFen > 0 },
-    { sub: 'Mélange', only: MEM_ON },
-    { range: 'mOpa', label: 'Opacité', only: MEM_ON },
-    { seg: 'mFusion', label: 'Fusion', cols: 4, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superp.']], only: MEM_ON },
-    { note: 'Photo nette : rendu Bloc ou Contour, couleur Photo, couverture basse. Proportion haute : pixels larges, basse : pixels hauts. Rafraîchissement 0 : motif figé en vidéo.', only: MEM_ON } ] },
+    { sub: 'Mélange des blocs', only: MEM_PIX },
+    { range: 'mOpa', label: 'Opacité', only: MEM_PIX },
+    { seg: 'mFusion', label: 'Fusion', cols: 4, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superp.']], only: MEM_PIX },
+    { note: 'Fenêtres : de grands carrés zoomés sur la photo, reliés à leur point d’origine. Les fenêtres s’ajoutent aussi aux programmes Blocs, Glyphes et Écho. Mets le nombre à 0 pour les retirer.', only: MEM_ON } ] },
   { t: 'Grille', key: 'grille', badge: 'grille', items: [
     { seg: 'grille', label: 'Programme', cols: 2, opts: [['aucune', 'Aucune'], ['mesure', 'Mesure'], ['editoriale', 'Éditoriale'], ['fragments', 'Fragments']] },
     { range: 'gModules', label: 'Nombre de modules', dep: ['grille', 'aucune'] },
@@ -2133,7 +2257,12 @@ function syncUI(){
 function paintRange(r){
   const min = +r.min;
   r.style.setProperty('--p', ((r.value - min) / (100 - min) * 100) + '%');
-  $('#o-' + r.name).textContent = (r.name === 'mNiveaux' && +r.value >= 100) ? 'MAX' : String(r.value).padStart(3, '0');
+  const v = +r.value, OUT = {
+    mNiveaux: () => v >= 100 ? 'MAX' : String(2 + Math.round(v / 100 * 14)),
+    mFen: () => String(Math.round(v / 100 * 16)),
+    mZoom: () => '×' + (1 + v / 100 * 3).toFixed(1)
+  };
+  $('#o-' + r.name).textContent = OUT[r.name] ? OUT[r.name]() : String(v).padStart(3, '0');
 }
 function applyPalette(){
   const p = PALETTES[S.palette];
