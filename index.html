@@ -213,7 +213,11 @@ const S = {
   // Dither
   dither: 'aucun', dGrain: 25, dSeuil: 50, dOpa: 85, dFusion: 'normal',
   // Pixel memory
-  memoire: 'aucune', mCell: 30, mSeuil: 50, mFen: 30, mOpa: 70,
+  memoire: 'aucune', mCell: 30, mSeuil: 50, mFen: 30, mOpa: 70, mRendu: 'mosaique', mCouv: 45, mFusion: 'normal',
+  // Vitre
+  vitre: 'aucune', vEclats: 45, vDecal: 40, vFissures: 70, vReflets: 40, vImpact: 'auto', impX: 0.5, impY: 0.45,
+  // Prisme
+  prisme: 'aucun', pForce: 40,
   // Grille
   grille: 'aucune', gModules: 40, gOpa: 55,
   // Chaîne de cercles
@@ -231,14 +235,19 @@ const PALETTES = {
 };
 
 // Les styles éteignent les couches spéciales sauf celles qu'ils allument
-const LAYERS_OFF = { dither: 'aucun', memoire: 'aucune', grille: 'aucune', chaine: 'non', contours: 0 };
+const LAYERS_OFF = { dither: 'aucun', memoire: 'aucune', grille: 'aucune', chaine: 'non', contours: 0, vitre: 'aucune', prisme: 'aucun' };
 const STYLES = {
   constellation: { nom: 'Constellation', v: { couleur: 'nb', opacite: 88, densite: 55, seuil: 22, liens: 'contour', distance: 45, epaisseur: 15, forme: 'mixte', taille: 30, lignes: 40, grain: 12, annot: 'oui', cadre: 'oui', palette: 'cyan' } },
   atlas: { nom: 'Atlas des contours', v: { couleur: 'original', opacite: 100, contours: 70, niveaux: 45, densite: 20, seuil: 35, liens: 'aucun', distance: 30, epaisseur: 10, forme: 'cercle', taille: 10, lignes: 0, grain: 6, annot: 'non', cadre: 'non', palette: 'solaire' } },
   plan: { nom: 'Plan technique', v: { couleur: 'teinte', opacite: 45, contours: 25, niveaux: 25, densite: 65, seuil: 20, liens: 'delaunay', distance: 35, epaisseur: 18, forme: 'crochets', taille: 34, lignes: 25, grain: 10, annot: 'oui', cadre: 'oui', palette: 'cobalt', grille: 'mesure', gModules: 45, gOpa: 35 } },
   radial: { nom: 'Spécimen radial', v: { couleur: 'nb', opacite: 80, densite: 45, seuil: 24, liens: 'delaunay', distance: 30, epaisseur: 12, forme: 'mixte', taille: 26, lignes: 20, grain: 10, annot: 'oui', cadre: 'oui', palette: 'rouge', chaine: 'oui', cNb: 45, cAngle: 30, cRayon: 35, cRatio: 60 } },
   dither: { nom: 'Dither cobalt', v: { couleur: 'nb', opacite: 100, densite: 35, seuil: 26, liens: 'contour', distance: 40, epaisseur: 14, forme: 'mixte', taille: 26, lignes: 10, grain: 0, annot: 'oui', cadre: 'oui', palette: 'cobalt', dither: 'atkinson', dGrain: 22, dSeuil: 50, dOpa: 100, dFusion: 'normal' } },
-  memoire: { nom: 'Mémoire pixel', v: { couleur: 'nb', opacite: 75, densite: 40, seuil: 24, liens: 'proximite', distance: 30, epaisseur: 12, forme: 'mixte', taille: 26, lignes: 45, grain: 12, annot: 'oui', cadre: 'oui', palette: 'mono', memoire: 'archive', mCell: 22, mSeuil: 55, mFen: 40, mOpa: 55 } },
+  memoireDouce: { nom: 'Mémoire douce', v: { couleur: 'original', opacite: 100, densite: 30, seuil: 26, liens: 'proximite', distance: 28, epaisseur: 10, forme: 'mixte', taille: 22, lignes: 8, grain: 5, annot: 'oui', cadre: 'oui', palette: 'mono', memoire: 'archive', mRendu: 'mosaique', mCouv: 40, mCell: 16, mSeuil: 45, mFen: 30, mOpa: 100, mFusion: 'normal' } },
+  memoire: { nom: 'Mémoire brute', v: { couleur: 'nb', opacite: 75, densite: 40, seuil: 24, liens: 'proximite', distance: 30, epaisseur: 12, forme: 'mixte', taille: 26, lignes: 45, grain: 12, annot: 'oui', cadre: 'oui', palette: 'mono', memoire: 'archive', mRendu: 'plein', mCouv: 100, mCell: 22, mSeuil: 55, mFen: 40, mOpa: 55, mFusion: 'normal' } },
+  vitre: { nom: 'Vitre brisée', v: { couleur: 'original', opacite: 100, densite: 18, seuil: 30, liens: 'aucun', forme: 'crochets', taille: 22, lignes: 6, grain: 8, annot: 'non', cadre: 'oui', palette: 'mono', vitre: 'impact', vEclats: 50, vDecal: 40, vFissures: 75, vReflets: 45 } },
+  miroir: { nom: 'Miroir brisé', v: { couleur: 'nb', opacite: 92, densite: 30, seuil: 26, liens: 'contour', distance: 35, epaisseur: 12, forme: 'mixte', taille: 22, lignes: 20, grain: 10, annot: 'non', cadre: 'oui', palette: 'cyan', vitre: 'miroir', vEclats: 40, vDecal: 50, vFissures: 70, vReflets: 50 } },
+  vitrail: { nom: 'Vitrail', v: { couleur: 'original', opacite: 100, densite: 15, seuil: 35, liens: 'aucun', forme: 'cercle', taille: 10, lignes: 0, grain: 6, annot: 'non', cadre: 'non', palette: 'solaire', vitre: 'vitrail', vEclats: 55, vFissures: 60, vReflets: 40 } },
+  prisme: { nom: 'Prisme glitch', v: { couleur: 'original', opacite: 100, densite: 25, seuil: 28, liens: 'aucun', forme: 'crochets', taille: 24, lignes: 40, grain: 10, annot: 'oui', cadre: 'oui', palette: 'rouge', prisme: 'tranches', pForce: 45 } },
   editorial: { nom: 'Grille éditoriale', v: { couleur: 'original', opacite: 100, densite: 35, seuil: 26, liens: 'contour', distance: 40, epaisseur: 12, forme: 'mixte', taille: 24, lignes: 15, grain: 8, annot: 'oui', cadre: 'oui', palette: 'cyan', grille: 'fragments', gModules: 45, gOpa: 60 } },
   echo: { nom: 'Écho horizontal', v: { couleur: 'original', opacite: 100, densite: 30, seuil: 28, liens: 'aucun', forme: 'crochets', taille: 22, lignes: 50, grain: 10, annot: 'oui', cadre: 'oui', palette: 'solaire', memoire: 'echo', mCell: 20, mSeuil: 45, mFen: 0, mOpa: 85 } }
 };
@@ -262,6 +271,9 @@ const [dCv, dCtx] = mk2d(true);         // dither (basse résolution)
 const [mCv, mCtx] = mk2d();             // pixel memory
 const [tCv, tCtx] = mk2d(true);         // petite image pour les cellules
 const [maskCv, maskCtx] = mk2d(true);   // masque visage
+const [gCv, gCtx] = mk2d();             // copie pour la vitre
+const [pCv, pCtx] = mk2d();             // copie pour le prisme
+const CHN = [mk2d(), mk2d(), mk2d()];   // canaux rouge, vert, bleu
 
 let src = { type: 'image', el: null, w: 0, h: 0, id: 0, url: null };
 let crop = { x: 0, y: 0, w: 1, h: 1 };
@@ -1077,37 +1089,61 @@ function memPitch(u){ return Math.max(4, Math.round((6 + S.mCell / 100 * 42) * u
 
 function updateMemory(W, H, u, pal, anim){
   const p = memPitch(u), slot = anim ? ((frameNo / 4) | 0) : 0;
-  const key = [src.id, W, H, p, S.memoire, S.mSeuil, S.palette, S.seed, S.seuil, slot].join('|');
+  const key = [src.id, W, H, p, S.memoire, S.mSeuil, S.mRendu, S.mCouv, S.palette, S.seed, S.seuil, slot].join('|');
   if (key === mKey) return;
   mKey = key;
   if (mCv.width !== W || mCv.height !== H){ mCv.width = W; mCv.height = H; } else mCtx.clearRect(0, 0, W, H);
   const cw = Math.ceil(W / p), ch = Math.ceil(H / p);
   tCv.width = cw; tCv.height = ch; drawSource(tCtx, cw, ch);
   const d = tCtx.getImageData(0, 0, cw, ch).data;
-  const cut = S.mSeuil / 100 * 255, thr = threshold() * 2;
+  const cut = S.mSeuil / 100 * 255, thr = threshold() * 2, couv = S.mCouv / 100;
   const edgeAt = (cx, cy) => {
     if (!MAG) return 0;
     const x = clamp(Math.round((cx + 0.5) * p / W * AW), 0, AW - 1), y = clamp(Math.round((cy + 0.5) * p / H * AH), 0, AH - 1);
     return MAG[y * AW + x];
   };
-  if (S.memoire === 'archive'){
-    const on = new Path2D(), acc = new Path2D();
+  // Couverture : seule une partie des cellules devient pixel, le reste de la photo reste net
+  const lum = j => d[j] * 0.299 + d[j + 1] * 0.587 + d[j + 2] * 0.114;
+  const pick = (x, y, l, e) => (l > cut || e) && hash2(S.seed + slot * 131, y * cw + x) < couv * (e ? 1.4 : 1);
+
+  if (S.memoire === 'archive' && S.mRendu === 'mosaique'){
+    // Mosaïque : chaque cellule choisie prend la couleur de la photo à cet endroit
+    const out = tCtx.createImageData(cw, ch), o = out.data, sep = new Path2D(), acc = new Path2D();
     for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++){
-      const j = (y * cw + x) * 4, l = d[j] * 0.299 + d[j + 1] * 0.587 + d[j + 2] * 0.114;
-      const h = hash2(S.seed + slot * 131, y * cw + x);
-      if (edgeAt(x, y) > thr && h < 0.6) acc.rect(x * p + 1, y * p + 1, p - 2, p - 2);
-      else if (l > cut){ if (h < 0.72) on.rect(x * p, y * p, p - 1, p - 1); else on.rect(x * p, y * p + p * 0.4, p - 1, Math.max(1, p * 0.2)); }
+      const j = (y * cw + x) * 4, e = edgeAt(x, y) > thr;
+      if (!pick(x, y, lum(j), e)) continue;
+      o[j] = d[j]; o[j + 1] = d[j + 1]; o[j + 2] = d[j + 2]; o[j + 3] = 255;
+      sep.rect(x * p, y * p, p, p);
+      if (e && hash2(S.seed + 5, y * cw + x) < 0.35) acc.rect(x * p + 1.5 * u, y * p + 1.5 * u, p - 3 * u, p - 3 * u);
     }
-    mCtx.fillStyle = pal.forme; mCtx.fill(on);
-    mCtx.strokeStyle = pal.ligne; mCtx.lineWidth = Math.max(1, u); mCtx.stroke(acc);
+    tCtx.putImageData(out, 0, 0);
+    mCtx.imageSmoothingEnabled = false; mCtx.drawImage(tCv, 0, 0, cw * p, ch * p); mCtx.imageSmoothingEnabled = true;
+    mCtx.lineWidth = Math.max(1, 0.7 * u);
+    mCtx.strokeStyle = pal.fond; mCtx.globalAlpha = 0.45; mCtx.stroke(sep);
+    mCtx.strokeStyle = pal.ligne; mCtx.globalAlpha = 0.9; mCtx.stroke(acc);
+    mCtx.globalAlpha = 1;
+  } else if (S.memoire === 'archive'){
+    const on = new Path2D(), acc = new Path2D(), plein = S.mRendu === 'plein';
+    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++){
+      const j = (y * cw + x) * 4, e = edgeAt(x, y) > thr;
+      if (!pick(x, y, lum(j), e)) continue;
+      const h = hash2(S.seed + slot * 131 + 9, y * cw + x);
+      if (e && h < 0.6) acc.rect(x * p + 1, y * p + 1, p - 2, p - 2);
+      else if (!plein) on.rect(x * p + 1, y * p + 1, p - 2, p - 2);
+      else if (h < 0.72) on.rect(x * p, y * p, p - 1, p - 1);
+      else on.rect(x * p, y * p + p * 0.4, p - 1, Math.max(1, p * 0.2));
+    }
+    mCtx.lineWidth = Math.max(1, 0.8 * u);
+    if (plein){ mCtx.fillStyle = pal.forme; mCtx.fill(on); } else { mCtx.strokeStyle = pal.forme; mCtx.stroke(on); }
+    mCtx.strokeStyle = pal.ligne; mCtx.stroke(acc);
   } else if (S.memoire === 'glyphes'){
     const ramp = ' .:-=+*#%@', fs = Math.max(6, Math.round(p * 1.1));
     mCtx.font = fs + 'px ' + MONO(); mCtx.textAlign = 'center'; mCtx.textBaseline = 'middle';
     let count = 0;
     for (let y = 0; y < ch && count < 7000; y++) for (let x = 0; x < cw; x++){
-      const j = (y * cw + x) * 4, l = d[j] * 0.299 + d[j + 1] * 0.587 + d[j + 2] * 0.114;
-      const e = edgeAt(x, y) > thr;
+      const j = (y * cw + x) * 4, l = lum(j), e = edgeAt(x, y) > thr;
       if (l < cut * 0.6 && !e) continue;
+      if (hash2(S.seed + 3, y * cw + x) >= couv * (e ? 1.4 : 1)) continue;
       const g = ramp[Math.min(ramp.length - 1, (l / 256 * ramp.length) | 0)];
       if (g === ' ') continue;
       mCtx.fillStyle = e ? pal.ligne : pal.forme;
@@ -1117,7 +1153,7 @@ function updateMemory(W, H, u, pal, anim){
 }
 function drawEcho(W, H, u, anim){
   const p = memPitch(u) * 0.6, r = mulberry32(S.seed * 7 + (anim ? ((frameNo / 3) | 0) : 0));
-  const rows = Math.round(H / p * (0.12 + S.mSeuil / 100 * 0.5));
+  const rows = Math.round(H / p * (0.12 + S.mSeuil / 100 * 0.5) * (0.25 + S.mCouv / 100));
   const a = S.mOpa / 100;
   for (let k = 0; k < rows; k++){
     const y = Math.floor(r() * H / p) * p, x0 = r() * W * 0.85, len = (0.15 + r() * 0.85) * (W - x0);
@@ -1147,6 +1183,177 @@ function drawWindows(W, H, u, pal){
     ctx.globalAlpha = 0.9; ctx.fillStyle = pal.forme; ctx.fillText('MEM-' + String(used.length).padStart(2, '0'), dx + 3 * u, dy - 3 * u);
   }
   ctx.globalAlpha = 1;
+}
+
+/* ==========================================================
+   17 bis. VITRE BRISÉE, MIROIR BRISÉ, VITRAIL
+   ========================================================== */
+let SHARDS = [], shardKey = '';
+
+function impactPoint(W, H){
+  if (S.vImpact === 'centre') return [W / 2, H / 2];
+  if (S.vImpact === 'toucher') return [S.impX * W, S.impY * H];
+  const i = heroIdx[0];
+  if (i >= 0 && i < nP) return [PX[i] * W / AW, PY[i] * H / AH];   // sur le point le plus fort
+  return [W / 2, H * 0.45];
+}
+
+// Découpe des éclats (calculée une fois tant que les réglages ne changent pas)
+function buildShards(W, H){
+  const imp = S.vitre === 'impact' ? impactPoint(W, H) : [0, 0];
+  const key = [S.vitre, S.vEclats, S.seed, Math.round(imp[0] / 4), Math.round(imp[1] / 4), W, H].join('|');
+  if (key === shardKey) return;
+  shardKey = key; SHARDS = [];
+  const r = mulberry32(S.seed * 29 + 3), L = Math.max(W, H);
+  const add = pts => {
+    let cx = 0, cy = 0, x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const [x, y] of pts){ cx += x; cy += y; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+    const path = new Path2D(); pts.forEach(([x, y], k) => k ? path.lineTo(x, y) : path.moveTo(x, y)); path.closePath();
+    SHARDS.push({ pts, path, cx: cx / pts.length, cy: cy / pts.length, x0, y0, x1, y1, h1: r(), h2: r(), h3: r() });
+  };
+  if (S.vitre === 'impact'){
+    // Toile d'araignée : fissures en rayons + anneaux concentriques incomplets
+    const [ix, iy] = imp;
+    const Rmax = Math.max(Math.hypot(ix, iy), Math.hypot(W - ix, iy), Math.hypot(ix, H - iy), Math.hypot(W - ix, H - iy)) * 1.05;
+    const nR = 10 + Math.round(S.vEclats / 100 * 30), nG = 6 + Math.round(S.vEclats / 100 * 10), r0 = 0.012 * L;
+    const th = []; for (let i = 0; i < nR; i++) th.push((i + (r() - 0.5) * 0.7) / nR * 6.2832);
+    th.sort((a, b) => a - b);
+    const rad = j => j === 0 ? r0 : r0 + (Rmax - r0) * Math.pow(j / nG, 1.6);
+    const P = th.map(a => { const col = []; for (let j = 0; j <= nG; j++){ const aa = a + (j ? (r() - 0.5) * 0.08 : 0), rr = rad(j) * (j ? 1 + (r() - 0.5) * 0.22 : 1); col.push([ix + Math.cos(aa) * rr, iy + Math.sin(aa) * rr]); } return col; });
+    for (let i = 0; i < nR; i++){
+      const A = P[i], B = P[(i + 1) % nR];
+      add([[ix, iy], A[0], B[0]]);
+      let j0 = 0;
+      for (let j = 1; j <= nG; j++){
+        if (j < nG && r() > 0.95 - 0.55 * j / nG) continue;       // pas de fissure ici : l'éclat continue
+        const left = A.slice(j0, j + 1), right = B.slice(j0, j + 1).reverse();
+        if (j - j0 === 1 && r() < 0.3){ add([A[j0], B[j0], B[j]]); add([A[j0], B[j], A[j]]); }
+        else add(left.concat(right));
+        j0 = j;
+      }
+    }
+  } else {
+    // Grille irrégulière : triangles et quadrilatères
+    const cols = 3 + Math.round(S.vEclats / 100 * 13), cw = W / cols, rows = Math.max(2, Math.round(H / cw)), chh = H / rows;
+    const V = [];
+    for (let y = 0; y <= rows; y++){ const row = []; for (let x = 0; x <= cols; x++) row.push([x * cw + (x > 0 && x < cols ? (r() - 0.5) * 0.7 * cw : 0), y * chh + (y > 0 && y < rows ? (r() - 0.5) * 0.7 * chh : 0)]); V.push(row); }
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++){
+      const a = V[y][x], b = V[y][x + 1], c = V[y + 1][x + 1], d = V[y + 1][x], t = r();
+      if (t < 0.4){ add([a, b, c]); add([a, c, d]); }
+      else if (t < 0.8){ add([a, b, d]); add([b, c, d]); }
+      else add([a, b, c, d]);
+    }
+  }
+}
+
+function drawGlass(W, H, u, pal, t, w, aBass, aBeat){
+  buildShards(W, H);
+  if (gCv.width !== W || gCv.height !== H){ gCv.width = W; gCv.height = H; }
+  gCtx.drawImage(cv, 0, 0);
+  const mode = S.vitre, fis = S.vFissures / 100, refl = S.vReflets / 100, mv = S.mouvement, L = Math.max(W, H);
+  if (mode === 'vitrail') return drawStained(W, H, u, fis, refl);
+
+  let disp = S.vDecal / 100 * (mode === 'miroir' ? 28 : 12) * u * (1 + aBass * 0.6 + aBeat * 1.5);
+  if (mv === 'pulsation') disp *= 0.5 + (0.5 + 0.5 * Math.sin(t * w * 1.6));
+  const rotAmp = S.vDecal / 100 * (mode === 'miroir' ? 0.07 : 0.025);
+  const [ix, iy] = mode === 'impact' ? impactPoint(W, H) : [W / 2, H / 2];
+
+  ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);       // les fissures laissent voir le noir
+  for (const s of SHARDS){
+    if (mode === 'miroir' && s.h1 > 0.965) continue;                          // éclat tombé
+    let dx, dy;
+    if (mode === 'impact'){
+      const vx = s.cx - ix, vy = s.cy - iy, l = Math.hypot(vx, vy) || 1, near = clamp(1 - l / (L * 0.9), 0.15, 1);
+      dx = vx / l * disp * (0.3 + 0.7 * s.h1) * near * 1.6 + (s.h2 - 0.5) * disp * 0.4;
+      dy = vy / l * disp * (0.3 + 0.7 * s.h1) * near * 1.6 + (s.h3 - 0.5) * disp * 0.4;
+    } else {
+      const a = s.h1 * 6.2832, m = disp * (0.3 + 0.7 * s.h2);
+      dx = Math.cos(a) * m; dy = Math.sin(a) * m + s.h3 * disp * 0.5;
+    }
+    let rot = (s.h3 - 0.5) * 2 * rotAmp;
+    if (mv === 'flux') rot += Math.sin(t * w + s.h1 * 6.28) * rotAmp * 0.8;
+    const sc = 1 + (s.h2 - 0.5) * (mode === 'miroir' ? 0.06 : 0.02);
+    ctx.save();
+    ctx.translate(s.cx + dx, s.cy + dy); ctx.rotate(rot); ctx.scale(sc, sc); ctx.translate(-s.cx, -s.cy);
+    ctx.clip(s.path);
+    const bx = Math.max(0, Math.floor(s.x0) - 2), by = Math.max(0, Math.floor(s.y0) - 2);
+    const bw = Math.min(W, Math.ceil(s.x1) + 2) - bx, bh = Math.min(H, Math.ceil(s.y1) + 2) - by;
+    if (bw > 0 && bh > 0) ctx.drawImage(gCv, bx, by, bw, bh, bx, by, bw, bh);
+    // Reflet sur certains éclats
+    if (refl > 0 && s.h2 < refl * 0.8){
+      const g = ctx.createLinearGradient(s.x0, s.y0, s.x1, s.y1), k = (0.08 + 0.25 * refl * s.h3).toFixed(3);
+      g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,' + k + ')'); g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g; ctx.fillRect(bx, by, bw, bh);
+    }
+    // Arête de verre
+    if (fis > 0){ ctx.lineWidth = Math.max(1, 1.6 * u); ctx.strokeStyle = 'rgba(255,255,255,' + (0.55 * fis).toFixed(3) + ')'; ctx.stroke(s.path); }
+    ctx.restore();
+  }
+  // Point d'impact : zone écrasée, micro-fissures et éclat de lumière
+  if (mode === 'impact' && fis > 0){
+    const q = new Path2D(), rr = mulberry32(S.seed * 41 + 1), r0 = 0.012 * L;
+    for (let k = 0; k < 28; k++){ const a = rr() * 6.2832, l = (0.01 + rr() * 0.05) * L; q.moveTo(ix, iy); q.lineTo(ix + Math.cos(a) * l, iy + Math.sin(a) * l); }
+    q.moveTo(ix + r0, iy); q.arc(ix, iy, r0, 0, 6.2832);
+    ctx.lineWidth = Math.max(0.7, 0.8 * u); ctx.strokeStyle = pal.forme; ctx.globalAlpha = 0.8 * fis; ctx.stroke(q);
+    const R = 0.08 * L, g = ctx.createRadialGradient(ix, iy, 0, ix, iy, R);
+    g.addColorStop(0, 'rgba(255,255,255,' + (0.35 * fis).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(ix - R, iy - R, R * 2, R * 2);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// Vitrail : chaque éclat est teinté de sa couleur dominante, cerné de plomb
+function drawStained(W, H, u, fis, refl){
+  const cw = 64, ch = Math.max(8, Math.round(64 * H / W));
+  tCv.width = cw; tCv.height = ch; tCtx.drawImage(gCv, 0, 0, cw, ch);
+  const d = tCtx.getImageData(0, 0, cw, ch).data, lead = new Path2D();
+  for (const s of SHARDS){
+    const j = (clamp((s.cy / H * ch) | 0, 0, ch - 1) * cw + clamp((s.cx / W * cw) | 0, 0, cw - 1)) * 4;
+    const m = (d[j] + d[j + 1] + d[j + 2]) / 3;
+    const c = [0, 1, 2].map(k => clamp(Math.round(m + (d[j + k] - m) * 2.2), 0, 255));
+    const col = 'rgb(' + c.join(',') + ')';
+    ctx.fillStyle = col;
+    ctx.globalCompositeOperation = 'color'; ctx.globalAlpha = 0.85; ctx.fill(s.path);
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.12 + 0.12 * s.h1; ctx.fill(s.path);
+    if (refl > 0 && s.h2 < refl * 0.6){
+      const g = ctx.createLinearGradient(s.x0, s.y0, s.x1, s.y1);
+      g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,' + (0.2 * refl).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fill(s.path);
+    }
+    lead.addPath(s.path);
+  }
+  ctx.globalAlpha = 1; ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#0b0806'; ctx.lineWidth = (1.5 + fis * 5) * u; ctx.stroke(lead);
+  ctx.strokeStyle = 'rgba(255,255,255,' + (0.1 + 0.2 * refl).toFixed(3) + ')'; ctx.lineWidth = Math.max(0.6, 0.7 * u); ctx.stroke(lead);
+  ctx.lineJoin = 'miter';
+}
+
+/* ==========================================================
+   17 ter. PRISME (séparation des couleurs, tranches glitch)
+   ========================================================== */
+function drawPrism(W, H, u, t, aBeat, anim){
+  const f = S.pForce / 100, off = (2 + f * 18) * u * (1 + aBeat * 2);
+  if (pCv.width !== W || pCv.height !== H){ pCv.width = W; pCv.height = H; }
+  pCtx.drawImage(cv, 0, 0);
+  ['#f00', '#0f0', '#00f'].forEach((col, k) => {
+    const [c, g] = CHN[k];
+    if (c.width !== W || c.height !== H){ c.width = W; c.height = H; }
+    g.globalCompositeOperation = 'source-over'; g.drawImage(pCv, 0, 0);
+    g.globalCompositeOperation = 'multiply'; g.fillStyle = col; g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'source-over';
+  });
+  const ang = S.mouvement !== 'aucun' ? t * 0.8 : 0, dx = Math.cos(ang) * off, dy = Math.sin(ang) * off * 0.3;
+  ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.drawImage(CHN[0][0], dx, dy); ctx.drawImage(CHN[1][0], 0, 0); ctx.drawImage(CHN[2][0], -dx, -dy);
+  ctx.globalCompositeOperation = 'source-over';
+  if (S.prisme === 'tranches'){
+    const r = mulberry32(S.seed * 17 + (anim ? ((frameNo / 3) | 0) : 0)), n = 4 + Math.round(f * 14);
+    for (let k = 0; k < n; k++){
+      const y = r() * H, h = (4 + r() * 40) * u, sx = (r() - 0.5) * W * 0.15 * f * (1 + aBeat);
+      ctx.drawImage(cv, 0, y, W, h, sx, y, W, h);
+    }
+  }
 }
 
 /* ==========================================================
@@ -1282,11 +1489,16 @@ function render(now){
   if (S.memoire === 'echo') drawEcho(W, H, u, anim);
   if (S.memoire === 'archive' || S.memoire === 'glyphes'){
     updateMemory(W, H, u, pal, src.type === 'video' || S.mouvement !== 'aucun');
-    ctx.globalAlpha = S.mOpa / 100; ctx.drawImage(mCv, 0, 0); ctx.globalAlpha = 1;
+    ctx.globalAlpha = S.mOpa / 100; ctx.globalCompositeOperation = BLEND[S.mFusion] || 'source-over';
+    ctx.drawImage(mCv, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   }
 
   const t = now / 1000, w = 0.4 + S.vitesse / 100 * 3.2, mv = S.mouvement, thr = threshold();
   const lw = (0.25 + S.epaisseur * 0.035) * u * (1 + aMid * 0.6);
+
+  // 1 bis. Vitre et prisme
+  if (S.vitre !== 'aucune') drawGlass(W, H, u, pal, t, w, aBass, aBeat);
+  if (S.prisme !== 'aucun') drawPrism(W, H, u, t, aBeat, anim);
 
   // 2. Grille
   if (S.grille !== 'aucune') drawGrid(W, H, u, pal);
@@ -1663,6 +1875,17 @@ const SECTIONS = [
   { t: 'Contours lumineux', badge: 'contours', items: [
     { range: 'contours', label: 'Intensité des contours', min: 0 },
     { range: 'niveaux', label: 'Nombre de niveaux', dep: ['contours', 0] } ] },
+  { t: 'Vitre', badge: 'vitre', items: [
+    { seg: 'vitre', label: 'Effet', cols: 2, opts: [['aucune', 'Aucun'], ['impact', 'Impact'], ['miroir', 'Miroir brisé'], ['vitrail', 'Vitrail']] },
+    { seg: 'vImpact', label: "Point d'impact", cols: 3, opts: [['auto', 'Auto'], ['centre', 'Centre'], ['toucher', 'Toucher']], dep: ['vitre', 'aucune'] },
+    { range: 'vEclats', label: "Nombre d'éclats", dep: ['vitre', 'aucune'] },
+    { range: 'vDecal', label: 'Décalage des éclats', min: 0, dep: ['vitre', 'aucune'] },
+    { range: 'vFissures', label: 'Fissures et plomb', min: 0, dep: ['vitre', 'aucune'] },
+    { range: 'vReflets', label: 'Reflets', min: 0, dep: ['vitre', 'aucune'] },
+    { note: "Impact : touche l'image pour placer le point d'impact. Avec un son, les éclats sautent sur les temps forts." } ] },
+  { t: 'Prisme', badge: 'prisme', items: [
+    { seg: 'prisme', label: 'Effet', cols: 3, opts: [['aucun', 'Aucun'], ['rvb', 'Séparation RVB'], ['tranches', 'Tranches glitch']] },
+    { range: 'pForce', label: 'Intensité', dep: ['prisme', 'aucun'] } ] },
   { t: 'Personnes', badge: 'personne', items: [
     { seg: 'personne', label: 'Détection', cols: 2, opts: [['aucun', 'Aucune'], ['silhouette', 'Silhouette'], ['squelette', 'Squelette'], ['visage', 'Maillage visage'], ['complet', 'Complet']] },
     { seg: 'protege', label: 'Protection des visages', cols: 3, opts: [['non', 'Non'], ['reduire', 'Réduire'], ['exclure', 'Exclure']] },
@@ -1675,10 +1898,14 @@ const SECTIONS = [
     { seg: 'dFusion', label: 'Fusion', cols: 2, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superposition']], dep: ['dither', 'aucun'] } ] },
   { t: 'Pixel memory', badge: 'memoire', items: [
     { seg: 'memoire', label: 'Programme', cols: 2, opts: [['aucune', 'Aucun'], ['archive', 'Cellules'], ['echo', 'Écho horizontal'], ['glyphes', 'Glyphes']] },
+    { seg: 'mRendu', label: 'Rendu des cellules', cols: 3, opts: [['mosaique', 'Mosaïque'], ['contour', 'Contour'], ['plein', 'Plein']], dep: ['memoire', 'aucune'] },
+    { range: 'mCouv', label: 'Couverture', dep: ['memoire', 'aucune'] },
     { range: 'mCell', label: 'Taille des cellules', dep: ['memoire', 'aucune'] },
     { range: 'mSeuil', label: 'Seuil binaire', dep: ['memoire', 'aucune'] },
     { range: 'mFen', label: 'Fenêtres mémoire', min: 0, dep: ['memoire', 'aucune'] },
-    { range: 'mOpa', label: 'Opacité', dep: ['memoire', 'aucune'] } ] },
+    { range: 'mOpa', label: 'Opacité', dep: ['memoire', 'aucune'] },
+    { seg: 'mFusion', label: 'Fusion', cols: 2, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superposition']], dep: ['memoire', 'aucune'] },
+    { note: 'Pour garder la photo nette : rendu Mosaïque ou Contour, couverture basse, et image source en couleur Original à 100 %.' } ] },
   { t: 'Grille', badge: 'grille', items: [
     { seg: 'grille', label: 'Programme', cols: 2, opts: [['aucune', 'Aucune'], ['mesure', 'Mesure'], ['editoriale', 'Éditoriale'], ['fragments', 'Fragments']] },
     { range: 'gModules', label: 'Nombre de modules', dep: ['grille', 'aucune'] },
@@ -1765,7 +1992,7 @@ function refreshDeps(){
     node.classList.toggle('off', off);
     node.querySelectorAll('input').forEach(i => { i.disabled = off; });
   }
-  const label = { liens: S.liens, contours: S.contours > 0 ? 'oui' : 'non', personne: S.personne, dither: S.dither, memoire: S.memoire, grille: S.grille, chaine: S.chaine, mouvement: S.mouvement };
+  const label = { liens: S.liens, contours: S.contours > 0 ? 'oui' : 'non', personne: S.personne, dither: S.dither, memoire: S.memoire, vitre: S.vitre, prisme: S.prisme, grille: S.grille, chaine: S.chaine, mouvement: S.mouvement };
   for (const k in BADGES){ const b = $('#b-' + k); if (b) b.textContent = String(label[k]).toUpperCase(); }
 }
 function syncUI(){
@@ -1876,6 +2103,15 @@ function bindEvents(){
     const v = src.el; if (src.type !== 'video') return;
     if (v.paused) v.play().then(() => { $('#bPlay').textContent = 'Pause'; }).catch(() => notify('Lecture impossible.', true));
     else { v.pause(); $('#bPlay').textContent = 'Lecture'; }
+  });
+  // Toucher l'image : place le point d'impact de la vitre
+  let tap = null;
+  cv.addEventListener('pointerdown', e => { tap = [e.clientX, e.clientY]; });
+  cv.addEventListener('pointerup', e => {
+    if (!tap || S.vitre !== 'impact' || Math.hypot(e.clientX - tap[0], e.clientY - tap[1]) > 10) return;
+    const r = cv.getBoundingClientRect();
+    S.impX = clamp((e.clientX - r.left) / r.width, 0, 1); S.impY = clamp((e.clientY - r.top) / r.height, 0, 1);
+    S.vImpact = 'toucher'; syncUI(); dirty = true; notify("Point d'impact placé.");
   });
   $('#bPng').addEventListener('click', exportPng);
   $('#bVid').addEventListener('click', exportVideo);
