@@ -29,7 +29,7 @@ button,input{font:inherit;color:inherit}
 
 /* ===== Scène ===== */
 .stage{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--rule);padding:10px 12px 8px}
-.frame{position:relative;height:42vh;height:42dvh;display:grid;place-items:center;background-color:var(--bg2);
+.frame{position:relative;height:36vh;height:36dvh;display:grid;place-items:center;background-color:var(--bg2);
   background-image:linear-gradient(var(--rule) 1px,transparent 1px),linear-gradient(90deg,var(--rule) 1px,transparent 1px);
   background-size:24px 24px;background-position:-1px -1px}
 .wrap{position:relative}
@@ -95,6 +95,31 @@ details.sec .body{padding:0 0 10px}
 .toggle span{font-size:16px;color:var(--acc)}
 #settings[hidden]{display:none}
 
+/* ===== Menu à icônes (défilement horizontal) ===== */
+.rail-wrap{position:relative;margin-top:8px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent)}
+.rail{display:flex;gap:4px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px calc(50% - 28px);scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.rail::-webkit-scrollbar{display:none}
+.ri{flex:none;width:56px;height:56px;display:grid;place-items:center;scroll-snap-align:center;border:0;background:none;color:var(--dim);cursor:pointer;position:relative;padding:0;
+  will-change:transform;-webkit-tap-highlight-color:transparent}
+.ri svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ri.cur{color:var(--acc)}
+.ri .dot{position:absolute;bottom:5px;left:50%;width:4px;height:4px;margin-left:-2px;background:var(--acc);opacity:0}
+.ri.live .dot{opacity:1}
+.lens{position:absolute;left:50%;top:4px;width:56px;height:56px;margin-left:-28px;pointer-events:none}
+.lens i{position:absolute;width:9px;height:9px;border:0 solid var(--acc)}
+.lens i:nth-child(1){top:0;left:0;border-width:1px 0 0 1px}.lens i:nth-child(2){top:0;right:0;border-width:1px 1px 0 0}
+.lens i:nth-child(3){bottom:0;left:0;border-width:0 0 1px 1px}.lens i:nth-child(4){bottom:0;right:0;border-width:0 1px 1px 0}
+.pane-head{display:flex;align-items:baseline;justify-content:space-between;padding:14px 0 4px;border-bottom:1px solid var(--rule)}
+.pane-head h2{margin:0}
+.pane-head .badge{font-size:10px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+.pane{padding:6px 0 10px}
+.pane[hidden]{display:none}
+.sub{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);font-weight:500;margin:18px 0 2px;padding-top:12px;border-top:1px dashed var(--rule)}
+.ctl.hide,.sub.hide,.note.hide{display:none}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 4px}
+.chips .btn{min-height:40px;font-size:10px}
+
 /* ===== Curseurs ===== */
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:36px;margin:2px 0 0;background:transparent;cursor:pointer;--p:50%}
 input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,var(--acc) 0 var(--p),var(--rule2) var(--p))}
@@ -144,28 +169,16 @@ body.dragging .drop{display:grid}
       <button class="btn" id="bHold" type="button">Original<small>maintenir</small></button>
       <button class="btn" id="bPlay" type="button" hidden>Pause</button>
     </div>
+    <nav class="rail-wrap" aria-label="Menu des réglages">
+      <div class="rail" id="rail" role="tablist" aria-label="Réglages"></div>
+      <div class="lens" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    </nav>
     <p class="msg" id="msg" role="status" aria-live="polite"></p>
   </section>
 
   <section class="panel">
-    <div class="block">
-      <h2>Style</h2>
-      <div class="styles" id="styles"></div>
-      <p class="note">Un style règle tout d'un coup. Ajuste ensuite à ton goût.</p>
-    </div>
-    <div class="block">
-      <h2>Export</h2>
-      <div id="dureeSlot"></div>
-      <div class="row2">
-        <button class="btn" id="bPng" type="button">Exporter PNG</button>
-        <button class="btn primary" id="bVid" type="button">Exporter vidéo</button>
-      </div>
-      <div class="progress" id="prog" hidden><i id="progBar"></i></div>
-      <p class="note" id="vidNote" hidden></p>
-      <p class="note">Ton image, ta vidéo et ton son restent sur ton appareil.</p>
-    </div>
-    <button class="toggle" id="toggle" type="button" aria-expanded="true" aria-controls="settings">Réglages<span id="toggleSign">−</span></button>
-    <div id="settings"></div>
+    <div class="pane-head"><h2 id="paneTitle">Style</h2><span class="badge" id="paneBadge"></span></div>
+    <div id="panes"></div>
   </section>
 </main>
 <div class="drop" aria-hidden="true">Dépose ton image, ta vidéo ou ton son</div>
@@ -213,9 +226,13 @@ const S = {
   // Dither
   dither: 'aucun', dGrain: 25, dSeuil: 50, dOpa: 85, dFusion: 'normal',
   // Pixel memory
-  memoire: 'aucune', mCell: 30, mSeuil: 50, mFen: 30, mOpa: 70, mRendu: 'mosaique', mCouv: 45, mFusion: 'normal',
+  memoire: 'aucune', mRendu: 'bloc', mCell: 30, mRatio: 50, mEcart: 0, mEntropie: 0,
+  mCible: 'clairs', mSeuil: 50, mCouv: 45, mPrio: 30,
+  mCouleur: 'photo', mNiveaux: 100, mContraste: 50, mAccent: 35, mSep: 45,
+  mDecal: 0, mRefresh: 40, mEchoLong: 60, mEchoDir: 'horizontal',
+  mFen: 30, mFenTaille: 40, mFenCadre: 'oui', mOpa: 100, mFusion: 'normal',
   // Vitre
-  vitre: 'aucune', vEclats: 45, vDecal: 40, vFissures: 70, vReflets: 40, vImpact: 'auto', impX: 0.5, impY: 0.45,
+  vitre: 'aucune', vEclats: 45, vDecal: 40, vFissures: 70, vReflets: 40,
   // Prisme
   prisme: 'aucun', pForce: 40,
   // Grille
@@ -235,6 +252,20 @@ const PALETTES = {
 };
 
 // Les styles éteignent les couches spéciales sauf celles qu'ils allument
+// Préréglages Pixel memory (complets : chaque réglage est défini)
+const MEM_BASE = { memoire: 'archive', mRendu: 'bloc', mCell: 30, mRatio: 50, mEcart: 0, mEntropie: 0, mCible: 'clairs', mSeuil: 50, mCouv: 45, mPrio: 30,
+  mCouleur: 'photo', mNiveaux: 100, mContraste: 50, mAccent: 35, mSep: 45, mDecal: 0, mRefresh: 40, mEchoLong: 60, mEchoDir: 'horizontal',
+  mFen: 30, mFenTaille: 40, mFenCadre: 'oui', mOpa: 100, mFusion: 'normal' };
+const MEM_PRESETS = {
+  douce:     { nom: 'Douce',     v: { mCell: 22, mCouv: 40, mSeuil: 45 } },
+  brute:     { nom: 'Brute',     v: { mCell: 26, mCouv: 100, mSeuil: 55, mCouleur: 'palette', mContraste: 65, mSep: 0, mAccent: 55, mOpa: 70, mFen: 40 } },
+  corrompue: { nom: 'Corrompue', v: { mCell: 24, mRatio: 70, mCible: 'tout', mCouv: 60, mDecal: 60, mEntropie: 25, mEcart: 8, mNiveaux: 20, mRefresh: 70, mSep: 30 } },
+  points:    { nom: 'Points',    v: { mRendu: 'point', mCell: 16, mCible: 'tout', mCouv: 75, mEcart: 12, mEntropie: 20, mSep: 0, mFen: 0 } },
+  glyphes:   { nom: 'Glyphes',   v: { memoire: 'glyphes', mCell: 18, mCible: 'tout', mCouv: 60, mCouleur: 'palette', mFen: 0 } },
+  echo:      { nom: 'Écho',      v: { memoire: 'echo', mCell: 14, mCouv: 50, mEchoLong: 70, mFen: 0 } }
+};
+const memPreset = k => Object.assign({}, MEM_BASE, MEM_PRESETS[k].v);
+
 const LAYERS_OFF = { dither: 'aucun', memoire: 'aucune', grille: 'aucune', chaine: 'non', contours: 0, vitre: 'aucune', prisme: 'aucun' };
 const STYLES = {
   constellation: { nom: 'Constellation', v: { couleur: 'nb', opacite: 88, densite: 55, seuil: 22, liens: 'contour', distance: 45, epaisseur: 15, forme: 'mixte', taille: 30, lignes: 40, grain: 12, annot: 'oui', cadre: 'oui', palette: 'cyan' } },
@@ -242,14 +273,14 @@ const STYLES = {
   plan: { nom: 'Plan technique', v: { couleur: 'teinte', opacite: 45, contours: 25, niveaux: 25, densite: 65, seuil: 20, liens: 'delaunay', distance: 35, epaisseur: 18, forme: 'crochets', taille: 34, lignes: 25, grain: 10, annot: 'oui', cadre: 'oui', palette: 'cobalt', grille: 'mesure', gModules: 45, gOpa: 35 } },
   radial: { nom: 'Spécimen radial', v: { couleur: 'nb', opacite: 80, densite: 45, seuil: 24, liens: 'delaunay', distance: 30, epaisseur: 12, forme: 'mixte', taille: 26, lignes: 20, grain: 10, annot: 'oui', cadre: 'oui', palette: 'rouge', chaine: 'oui', cNb: 45, cAngle: 30, cRayon: 35, cRatio: 60 } },
   dither: { nom: 'Dither cobalt', v: { couleur: 'nb', opacite: 100, densite: 35, seuil: 26, liens: 'contour', distance: 40, epaisseur: 14, forme: 'mixte', taille: 26, lignes: 10, grain: 0, annot: 'oui', cadre: 'oui', palette: 'cobalt', dither: 'atkinson', dGrain: 22, dSeuil: 50, dOpa: 100, dFusion: 'normal' } },
-  memoireDouce: { nom: 'Mémoire douce', v: { couleur: 'original', opacite: 100, densite: 30, seuil: 26, liens: 'proximite', distance: 28, epaisseur: 10, forme: 'mixte', taille: 22, lignes: 8, grain: 5, annot: 'oui', cadre: 'oui', palette: 'mono', memoire: 'archive', mRendu: 'mosaique', mCouv: 40, mCell: 16, mSeuil: 45, mFen: 30, mOpa: 100, mFusion: 'normal' } },
-  memoire: { nom: 'Mémoire brute', v: { couleur: 'nb', opacite: 75, densite: 40, seuil: 24, liens: 'proximite', distance: 30, epaisseur: 12, forme: 'mixte', taille: 26, lignes: 45, grain: 12, annot: 'oui', cadre: 'oui', palette: 'mono', memoire: 'archive', mRendu: 'plein', mCouv: 100, mCell: 22, mSeuil: 55, mFen: 40, mOpa: 55, mFusion: 'normal' } },
-  vitre: { nom: 'Vitre brisée', v: { couleur: 'original', opacite: 100, densite: 18, seuil: 30, liens: 'aucun', forme: 'crochets', taille: 22, lignes: 6, grain: 8, annot: 'non', cadre: 'oui', palette: 'mono', vitre: 'impact', vEclats: 50, vDecal: 40, vFissures: 75, vReflets: 45 } },
+  memoireDouce: { nom: 'Mémoire douce', v: Object.assign(memPreset('douce'), { couleur: 'original', opacite: 100, densite: 30, seuil: 26, liens: 'proximite', distance: 28, epaisseur: 10, forme: 'mixte', taille: 22, lignes: 8, grain: 5, annot: 'oui', cadre: 'oui', palette: 'mono' }) },
+  memoire: { nom: 'Mémoire brute', v: Object.assign(memPreset('brute'), { couleur: 'nb', opacite: 75, densite: 40, seuil: 24, liens: 'proximite', distance: 30, epaisseur: 12, forme: 'mixte', taille: 26, lignes: 45, grain: 12, annot: 'oui', cadre: 'oui', palette: 'mono' }) },
+  corrompue: { nom: 'Mémoire corrompue', v: Object.assign(memPreset('corrompue'), { couleur: 'original', opacite: 100, densite: 25, seuil: 28, liens: 'aucun', forme: 'crochets', taille: 22, lignes: 25, grain: 10, annot: 'oui', cadre: 'oui', palette: 'cyan' }) },
   miroir: { nom: 'Miroir brisé', v: { couleur: 'nb', opacite: 92, densite: 30, seuil: 26, liens: 'contour', distance: 35, epaisseur: 12, forme: 'mixte', taille: 22, lignes: 20, grain: 10, annot: 'non', cadre: 'oui', palette: 'cyan', vitre: 'miroir', vEclats: 40, vDecal: 50, vFissures: 70, vReflets: 50 } },
   vitrail: { nom: 'Vitrail', v: { couleur: 'original', opacite: 100, densite: 15, seuil: 35, liens: 'aucun', forme: 'cercle', taille: 10, lignes: 0, grain: 6, annot: 'non', cadre: 'non', palette: 'solaire', vitre: 'vitrail', vEclats: 55, vFissures: 60, vReflets: 40 } },
   prisme: { nom: 'Prisme glitch', v: { couleur: 'original', opacite: 100, densite: 25, seuil: 28, liens: 'aucun', forme: 'crochets', taille: 24, lignes: 40, grain: 10, annot: 'oui', cadre: 'oui', palette: 'rouge', prisme: 'tranches', pForce: 45 } },
   editorial: { nom: 'Grille éditoriale', v: { couleur: 'original', opacite: 100, densite: 35, seuil: 26, liens: 'contour', distance: 40, epaisseur: 12, forme: 'mixte', taille: 24, lignes: 15, grain: 8, annot: 'oui', cadre: 'oui', palette: 'cyan', grille: 'fragments', gModules: 45, gOpa: 60 } },
-  echo: { nom: 'Écho horizontal', v: { couleur: 'original', opacite: 100, densite: 30, seuil: 28, liens: 'aucun', forme: 'crochets', taille: 22, lignes: 50, grain: 10, annot: 'oui', cadre: 'oui', palette: 'solaire', memoire: 'echo', mCell: 20, mSeuil: 45, mFen: 0, mOpa: 85 } }
+  echo: { nom: 'Écho horizontal', v: Object.assign(memPreset('echo'), { couleur: 'original', opacite: 100, densite: 30, seuil: 28, liens: 'aucun', forme: 'crochets', taille: 22, lignes: 50, grain: 10, annot: 'oui', cadre: 'oui', palette: 'solaire', mOpa: 85 }) }
 };
 
 const MAXP = 1200;
@@ -1085,97 +1116,131 @@ function drawDither(W, H, u, pal, anim){
 /* ==========================================================
    17. PIXEL MEMORY (cellules binaires, glyphes, écho, fenêtres)
    ========================================================== */
-function memPitch(u){ return Math.max(4, Math.round((6 + S.mCell / 100 * 42) * u)); }
+// Rafraîchissement : tous les combien d'images le motif change en mouvement
+function memSlot(anim){
+  if (!anim || S.mRefresh <= 0) return 0;
+  return (frameNo / Math.max(1, Math.round(30 - S.mRefresh * 0.29))) | 0;
+}
+// Taille des cellules (proportion 50 = carré)
+function memGeom(u){
+  const p = Math.max(3, (5 + S.mCell / 100 * 55) * u), f = Math.sqrt(Math.pow(2, (S.mRatio - 50) / 25));
+  return { cw: Math.max(2, p * f), ch: Math.max(2, p / f) };
+}
+const MEM_KEYS = ['memoire', 'mRendu', 'mCell', 'mRatio', 'mEcart', 'mEntropie', 'mCible', 'mSeuil', 'mCouv', 'mPrio', 'mCouleur', 'mNiveaux', 'mContraste', 'mAccent', 'mSep', 'mDecal', 'mRefresh'];
 
 function updateMemory(W, H, u, pal, anim){
-  const p = memPitch(u), slot = anim ? ((frameNo / 4) | 0) : 0;
-  const key = [src.id, W, H, p, S.memoire, S.mSeuil, S.mRendu, S.mCouv, S.palette, S.seed, S.seuil, slot].join('|');
+  const slot = memSlot(anim), g = memGeom(u);
+  const key = [src.id, W, H, slot, S.palette, S.seed, S.seuil].concat(MEM_KEYS.map(k => S[k])).join('|');
   if (key === mKey) return;
   mKey = key;
   if (mCv.width !== W || mCv.height !== H){ mCv.width = W; mCv.height = H; } else mCtx.clearRect(0, 0, W, H);
-  const cw = Math.ceil(W / p), ch = Math.ceil(H / p);
-  tCv.width = cw; tCv.height = ch; drawSource(tCtx, cw, ch);
-  const d = tCtx.getImageData(0, 0, cw, ch).data;
-  const cut = S.mSeuil / 100 * 255, thr = threshold() * 2, couv = S.mCouv / 100;
-  const edgeAt = (cx, cy) => {
+  const cols = Math.ceil(W / g.cw), rows = Math.ceil(H / g.ch);
+  tCv.width = cols; tCv.height = rows; drawSource(tCtx, cols, rows);
+  const d = tCtx.getImageData(0, 0, cols, rows).data;
+  const cutL = S.mSeuil / 100 * 255, thrE = threshold() * 2, couv = S.mCouv / 100, prio = S.mPrio / 100;
+  const ent = S.mEntropie / 100, gap = S.mEcart / 100 * 0.5, shift = S.mDecal / 100, seed = S.seed + slot * 131;
+  const edgeAt = (x, y) => {
     if (!MAG) return 0;
-    const x = clamp(Math.round((cx + 0.5) * p / W * AW), 0, AW - 1), y = clamp(Math.round((cy + 0.5) * p / H * AH), 0, AH - 1);
-    return MAG[y * AW + x];
+    const ax = clamp(Math.round((x + 0.5) * g.cw / W * AW), 0, AW - 1), ay = clamp(Math.round((y + 0.5) * g.ch / H * AH), 0, AH - 1);
+    return MAG[ay * AW + ax];
   };
-  // Couverture : seule une partie des cellules devient pixel, le reste de la photo reste net
-  const lum = j => d[j] * 0.299 + d[j + 1] * 0.587 + d[j + 2] * 0.114;
-  const pick = (x, y, l, e) => (l > cut || e) && hash2(S.seed + slot * 131, y * cw + x) < couv * (e ? 1.4 : 1);
 
-  if (S.memoire === 'archive' && S.mRendu === 'mosaique'){
-    // Mosaïque : chaque cellule choisie prend la couleur de la photo à cet endroit
-    const out = tCtx.createImageData(cw, ch), o = out.data, sep = new Path2D(), acc = new Path2D();
-    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++){
-      const j = (y * cw + x) * 4, e = edgeAt(x, y) > thr;
-      if (!pick(x, y, lum(j), e)) continue;
-      o[j] = d[j]; o[j + 1] = d[j + 1]; o[j + 2] = d[j + 2]; o[j + 3] = 255;
-      sep.rect(x * p, y * p, p, p);
-      if (e && hash2(S.seed + 5, y * cw + x) < 0.35) acc.rect(x * p + 1.5 * u, y * p + 1.5 * u, p - 3 * u, p - 3 * u);
-    }
-    tCtx.putImageData(out, 0, 0);
-    mCtx.imageSmoothingEnabled = false; mCtx.drawImage(tCv, 0, 0, cw * p, ch * p); mCtx.imageSmoothingEnabled = true;
-    mCtx.lineWidth = Math.max(1, 0.7 * u);
-    mCtx.strokeStyle = pal.fond; mCtx.globalAlpha = 0.45; mCtx.stroke(sep);
-    mCtx.strokeStyle = pal.ligne; mCtx.globalAlpha = 0.9; mCtx.stroke(acc);
-    mCtx.globalAlpha = 1;
-  } else if (S.memoire === 'archive'){
-    const on = new Path2D(), acc = new Path2D(), plein = S.mRendu === 'plein';
-    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++){
-      const j = (y * cw + x) * 4, e = edgeAt(x, y) > thr;
-      if (!pick(x, y, lum(j), e)) continue;
-      const h = hash2(S.seed + slot * 131 + 9, y * cw + x);
-      if (e && h < 0.6) acc.rect(x * p + 1, y * p + 1, p - 2, p - 2);
-      else if (!plein) on.rect(x * p + 1, y * p + 1, p - 2, p - 2);
-      else if (h < 0.72) on.rect(x * p, y * p, p - 1, p - 1);
-      else on.rect(x * p, y * p + p * 0.4, p - 1, Math.max(1, p * 0.2));
-    }
-    mCtx.lineWidth = Math.max(1, 0.8 * u);
-    if (plein){ mCtx.fillStyle = pal.forme; mCtx.fill(on); } else { mCtx.strokeStyle = pal.forme; mCtx.stroke(on); }
-    mCtx.strokeStyle = pal.ligne; mCtx.stroke(acc);
-  } else if (S.memoire === 'glyphes'){
-    const ramp = ' .:-=+*#%@', fs = Math.max(6, Math.round(p * 1.1));
-    mCtx.font = fs + 'px ' + MONO(); mCtx.textAlign = 'center'; mCtx.textBaseline = 'middle';
-    let count = 0;
-    for (let y = 0; y < ch && count < 7000; y++) for (let x = 0; x < cw; x++){
-      const j = (y * cw + x) * 4, l = lum(j), e = edgeAt(x, y) > thr;
-      if (l < cut * 0.6 && !e) continue;
-      if (hash2(S.seed + 3, y * cw + x) >= couv * (e ? 1.4 : 1)) continue;
-      const g = ramp[Math.min(ramp.length - 1, (l / 256 * ramp.length) | 0)];
-      if (g === ' ') continue;
-      mCtx.fillStyle = e ? pal.ligne : pal.forme;
-      mCtx.fillText(g, x * p + p / 2, y * p + p / 2); count++;
+  // 1. Choix des cellules
+  const cells = [], MAXC = 16000, bandH = Math.max(1, Math.round(rows * 0.05));
+  for (let y = 0; y < rows && cells.length < MAXC; y++){
+    // Décalage : certaines bandes lisent la photo plus loin (mémoire corrompue)
+    const band = (y / bandH) | 0;
+    const sh = shift > 0 && hash2(seed + 77, band) < 0.35 + shift * 0.5 ? Math.round((hash2(seed + 78, band) - 0.5) * 2 * shift * cols * 0.35) : 0;
+    for (let x = 0; x < cols; x++){
+      const sx = ((x + sh) % cols + cols) % cols, j = (y * cols + sx) * 4;
+      const l = d[j] * 0.299 + d[j + 1] * 0.587 + d[j + 2] * 0.114, e = edgeAt(x, y) > thrE;
+      const ok = S.mCible === 'clairs' ? l > cutL : S.mCible === 'sombres' ? l < cutL : S.mCible === 'contours' ? e : true;
+      if (!ok) continue;
+      const id = y * cols + x;
+      if (hash2(seed, id) >= couv * (e ? 1 + prio * 1.5 : 1 - prio * 0.7)) continue;
+      // Entropie : taille et position irrégulières
+      const h2 = hash2(seed + 1, id), h3 = hash2(seed + 2, id), sc = 1 - ent * 0.7 * h2;
+      const w = g.cw * (1 - gap) * sc, h = g.ch * (1 - gap) * sc;
+      const cx = (x + 0.5) * g.cw + (h3 - 0.5) * ent * g.cw * 0.9, cy = (y + 0.5) * g.ch + (h2 - 0.5) * ent * g.ch * 0.9;
+      cells.push([cx - w / 2, cy - h / 2, w, h, d[j], d[j + 1], d[j + 2], l, e, h3]);
     }
   }
+
+  // 2. Couleur : contraste, niveaux, mode
+  const cf = 1 + (S.mContraste - 50) / 50 * 1.2, L = S.mNiveaux >= 100 ? 0 : 2 + Math.round(S.mNiveaux / 100 * 14);
+  const q = v => L ? Math.round(v / 255 * (L - 1)) * 255 / (L - 1) : v;
+  const ct = v => clamp((v - 128) * cf + 128, 0, 255);
+  const F = hexRgb(pal.fond), Li = hexRgb(pal.ligne), Fo = hexRgb(pal.forme);
+  const colorOf = c => {
+    let r = ct(c[4]), gg = ct(c[5]), b = ct(c[6]);
+    if (S.mCouleur === 'palette'){
+      // Glyphes : jamais la couleur du fond, sinon ils disparaissent dans les zones sombres
+      const t = q(ct(c[7])) / 255, gl = S.memoire === 'glyphes';
+      const A = gl || t >= 0.5 ? Li : F, B = gl || t >= 0.5 ? Fo : Li, k = gl ? t : t < 0.5 ? t * 2 : (t - 0.5) * 2;
+      return 'rgb(' + [0, 1, 2].map(i => Math.round(A[i] + (B[i] - A[i]) * k)).join(',') + ')';
+    }
+    if (S.mCouleur === 'mono'){ r = gg = b = r * 0.299 + gg * 0.587 + b * 0.114; }
+    else if (S.mCouleur === 'inverse'){ r = 255 - r; gg = 255 - gg; b = 255 - b; }
+    return 'rgb(' + Math.round(q(r)) + ',' + Math.round(q(gg)) + ',' + Math.round(q(b)) + ')';
+  };
+
+  // 3. Dessin
+  const lw = Math.max(1, 0.8 * u), R = S.mRendu, acc = new Path2D(), sep = new Path2D(), accent = S.mAccent / 100;
+  mCtx.lineWidth = lw;
+  if (S.memoire === 'glyphes'){
+    const ramp = ' .:-=+*#%@';
+    mCtx.font = Math.max(5, Math.round(g.ch * 1.05)) + 'px ' + MONO(); mCtx.textAlign = 'center'; mCtx.textBaseline = 'middle';
+    for (const c of cells){
+      const ch = ramp[Math.min(ramp.length - 1, (c[7] / 256 * ramp.length) | 0)];
+      if (ch === ' ') continue;
+      mCtx.fillStyle = (c[8] && c[9] < accent) ? pal.ligne : colorOf(c);
+      mCtx.fillText(ch, c[0] + c[2] / 2, c[1] + c[3] / 2);
+    }
+    return;
+  }
+  for (const c of cells){
+    const [x, y, w, h] = c, col = colorOf(c);
+    if (R === 'contour'){ mCtx.strokeStyle = col; mCtx.strokeRect(x + lw / 2, y + lw / 2, Math.max(1, w - lw), Math.max(1, h - lw)); }
+    else if (R === 'point'){ mCtx.fillStyle = col; mCtx.beginPath(); mCtx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, 6.2832); mCtx.fill(); }
+    else if (R === 'barre'){ mCtx.fillStyle = col; mCtx.fillRect(x, y + h * 0.35, w, Math.max(1, h * 0.3)); }
+    else { mCtx.fillStyle = col; mCtx.fillRect(x, y, w, h); sep.rect(x, y, w, h); }
+    if (c[8] && c[9] < accent) acc.rect(x + 1.5 * u, y + 1.5 * u, Math.max(1, w - 3 * u), Math.max(1, h - 3 * u));
+  }
+  if (R === 'bloc' && S.mSep > 0){ mCtx.strokeStyle = pal.fond; mCtx.globalAlpha = S.mSep / 100; mCtx.stroke(sep); }
+  mCtx.globalAlpha = 0.95; mCtx.strokeStyle = pal.ligne; mCtx.stroke(acc); mCtx.globalAlpha = 1;
 }
+
+// Écho : traînées de pixels étirées depuis une colonne (ou une ligne)
 function drawEcho(W, H, u, anim){
-  const p = memPitch(u) * 0.6, r = mulberry32(S.seed * 7 + (anim ? ((frameNo / 3) | 0) : 0));
-  const rows = Math.round(H / p * (0.12 + S.mSeuil / 100 * 0.5) * (0.25 + S.mCouv / 100));
-  const a = S.mOpa / 100;
-  for (let k = 0; k < rows; k++){
-    const y = Math.floor(r() * H / p) * p, x0 = r() * W * 0.85, len = (0.15 + r() * 0.85) * (W - x0);
+  const g = memGeom(u), r = mulberry32(S.seed * 7 + memSlot(anim)), vert = S.mEchoDir === 'vertical';
+  const step = vert ? g.cw : g.ch, span = vert ? W : H, other = vert ? H : W;
+  const n = Math.round(span / step * (0.1 + S.mCouv / 100 * 0.8)), lenMax = S.mEchoLong / 100, a = S.mOpa / 100;
+  ctx.globalCompositeOperation = BLEND[S.mFusion] || 'source-over';
+  for (let k = 0; k < n; k++){
+    const pos = Math.floor(r() * span / step) * step, o0 = r() * other * 0.85, len = (0.1 + r() * 0.9) * lenMax * (other - o0);
     ctx.globalAlpha = a * (0.4 + 0.6 * r());
-    ctx.drawImage(cv, x0, y, Math.max(1, 2 * u), p, x0, y, len, p);
+    if (vert) ctx.drawImage(cv, pos, o0, step, Math.max(1, 2 * u), pos, o0, step, Math.max(1, len));
+    else ctx.drawImage(cv, o0, pos, Math.max(1, 2 * u), step, o0, pos, Math.max(1, len), step);
   }
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
 }
+
+// Fenêtres mémoire : morceaux nets de la photo, déplacés et encadrés
 function drawWindows(W, H, u, pal){
   const n = Math.round(S.mFen / 100 * 8); if (!n || !nP) return;
-  const L = Math.max(W, H), used = [];
+  const L = Math.max(W, H), used = [], size = 0.05 + S.mFenTaille / 100 * 0.25, cadre = S.mFenCadre === 'oui';
   const cand = heroIdx.concat(Array.from({ length: nP }, (_, i) => i).sort((a, b) => PS[b] - PS[a]).slice(0, 60));
   ctx.font = Math.round(8.5 * u) + 'px ' + MONO(); ctx.textBaseline = 'bottom';
   for (const i of cand){
     if (used.length >= n) break;
-    if (i < 0 || i >= nP || used.some(j => Math.hypot(QX[j] - QX[i], QY[j] - QY[i]) < L * 0.12)) continue;
+    if (i < 0 || i >= nP || used.some(j => Math.hypot(QX[j] - QX[i], QY[j] - QY[i]) < L * size)) continue;
     used.push(i);
     const h1 = hash2(S.seed + 11, PC[i]), h2 = hash2(S.seed + 12, PC[i]);
-    const w = (0.1 + h1 * 0.1) * L, h = w * (0.55 + h2 * 0.6), x = QX[i], y = QY[i];
+    const w = size * (0.7 + h1 * 0.6) * L, h = w * (0.55 + h2 * 0.6), x = QX[i], y = QY[i];
     const ang = h2 * 6.2832, dist = w * 0.95;
     const dx = clamp(x + Math.cos(ang) * dist - w / 2, 4 * u, W - w - 4 * u), dy = clamp(y + Math.sin(ang) * dist - h / 2, 4 * u, H - h - 4 * u);
     ctx.globalAlpha = 1; drawSourceRect(ctx, x - w / 2, y - h / 2, w, h, dx, dy, w, h);
+    if (!cadre) continue;
     ctx.lineWidth = Math.max(0.8, u); ctx.strokeStyle = pal.forme;
     ctx.strokeRect(dx, dy, w, h);
     ctx.globalAlpha = 0.4; ctx.strokeRect(x - w / 2, y - h / 2, w, h);
@@ -1186,63 +1251,30 @@ function drawWindows(W, H, u, pal){
 }
 
 /* ==========================================================
-   17 bis. VITRE BRISÉE, MIROIR BRISÉ, VITRAIL
+   17 bis. MIROIR BRISÉ ET VITRAIL
    ========================================================== */
 let SHARDS = [], shardKey = '';
 
-function impactPoint(W, H){
-  if (S.vImpact === 'centre') return [W / 2, H / 2];
-  if (S.vImpact === 'toucher') return [S.impX * W, S.impY * H];
-  const i = heroIdx[0];
-  if (i >= 0 && i < nP) return [PX[i] * W / AW, PY[i] * H / AH];   // sur le point le plus fort
-  return [W / 2, H * 0.45];
-}
-
-// Découpe des éclats (calculée une fois tant que les réglages ne changent pas)
+// Découpe en éclats : grille irrégulière de triangles et quadrilatères
 function buildShards(W, H){
-  const imp = S.vitre === 'impact' ? impactPoint(W, H) : [0, 0];
-  const key = [S.vitre, S.vEclats, S.seed, Math.round(imp[0] / 4), Math.round(imp[1] / 4), W, H].join('|');
+  const key = [S.vitre, S.vEclats, S.seed, W, H].join('|');
   if (key === shardKey) return;
   shardKey = key; SHARDS = [];
-  const r = mulberry32(S.seed * 29 + 3), L = Math.max(W, H);
+  const r = mulberry32(S.seed * 29 + 3);
   const add = pts => {
     let cx = 0, cy = 0, x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const [x, y] of pts){ cx += x; cy += y; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
     const path = new Path2D(); pts.forEach(([x, y], k) => k ? path.lineTo(x, y) : path.moveTo(x, y)); path.closePath();
     SHARDS.push({ pts, path, cx: cx / pts.length, cy: cy / pts.length, x0, y0, x1, y1, h1: r(), h2: r(), h3: r() });
   };
-  if (S.vitre === 'impact'){
-    // Toile d'araignée : fissures en rayons + anneaux concentriques incomplets
-    const [ix, iy] = imp;
-    const Rmax = Math.max(Math.hypot(ix, iy), Math.hypot(W - ix, iy), Math.hypot(ix, H - iy), Math.hypot(W - ix, H - iy)) * 1.05;
-    const nR = 10 + Math.round(S.vEclats / 100 * 30), nG = 6 + Math.round(S.vEclats / 100 * 10), r0 = 0.012 * L;
-    const th = []; for (let i = 0; i < nR; i++) th.push((i + (r() - 0.5) * 0.7) / nR * 6.2832);
-    th.sort((a, b) => a - b);
-    const rad = j => j === 0 ? r0 : r0 + (Rmax - r0) * Math.pow(j / nG, 1.6);
-    const P = th.map(a => { const col = []; for (let j = 0; j <= nG; j++){ const aa = a + (j ? (r() - 0.5) * 0.08 : 0), rr = rad(j) * (j ? 1 + (r() - 0.5) * 0.22 : 1); col.push([ix + Math.cos(aa) * rr, iy + Math.sin(aa) * rr]); } return col; });
-    for (let i = 0; i < nR; i++){
-      const A = P[i], B = P[(i + 1) % nR];
-      add([[ix, iy], A[0], B[0]]);
-      let j0 = 0;
-      for (let j = 1; j <= nG; j++){
-        if (j < nG && r() > 0.95 - 0.55 * j / nG) continue;       // pas de fissure ici : l'éclat continue
-        const left = A.slice(j0, j + 1), right = B.slice(j0, j + 1).reverse();
-        if (j - j0 === 1 && r() < 0.3){ add([A[j0], B[j0], B[j]]); add([A[j0], B[j], A[j]]); }
-        else add(left.concat(right));
-        j0 = j;
-      }
-    }
-  } else {
-    // Grille irrégulière : triangles et quadrilatères
-    const cols = 3 + Math.round(S.vEclats / 100 * 13), cw = W / cols, rows = Math.max(2, Math.round(H / cw)), chh = H / rows;
-    const V = [];
-    for (let y = 0; y <= rows; y++){ const row = []; for (let x = 0; x <= cols; x++) row.push([x * cw + (x > 0 && x < cols ? (r() - 0.5) * 0.7 * cw : 0), y * chh + (y > 0 && y < rows ? (r() - 0.5) * 0.7 * chh : 0)]); V.push(row); }
-    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++){
-      const a = V[y][x], b = V[y][x + 1], c = V[y + 1][x + 1], d = V[y + 1][x], t = r();
-      if (t < 0.4){ add([a, b, c]); add([a, c, d]); }
-      else if (t < 0.8){ add([a, b, d]); add([b, c, d]); }
-      else add([a, b, c, d]);
-    }
+  const cols = 3 + Math.round(S.vEclats / 100 * 13), cw = W / cols, rows = Math.max(2, Math.round(H / cw)), chh = H / rows;
+  const V = [];
+  for (let y = 0; y <= rows; y++){ const row = []; for (let x = 0; x <= cols; x++) row.push([x * cw + (x > 0 && x < cols ? (r() - 0.5) * 0.7 * cw : 0), y * chh + (y > 0 && y < rows ? (r() - 0.5) * 0.7 * chh : 0)]); V.push(row); }
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++){
+    const a = V[y][x], b = V[y][x + 1], c = V[y + 1][x + 1], d = V[y + 1][x], t = r();
+    if (t < 0.4){ add([a, b, c]); add([a, c, d]); }
+    else if (t < 0.8){ add([a, b, d]); add([b, c, d]); }
+    else add([a, b, c, d]);
   }
 }
 
@@ -1250,54 +1282,33 @@ function drawGlass(W, H, u, pal, t, w, aBass, aBeat){
   buildShards(W, H);
   if (gCv.width !== W || gCv.height !== H){ gCv.width = W; gCv.height = H; }
   gCtx.drawImage(cv, 0, 0);
-  const mode = S.vitre, fis = S.vFissures / 100, refl = S.vReflets / 100, mv = S.mouvement, L = Math.max(W, H);
-  if (mode === 'vitrail') return drawStained(W, H, u, fis, refl);
+  const fis = S.vFissures / 100, refl = S.vReflets / 100, mv = S.mouvement;
+  if (S.vitre === 'vitrail') return drawStained(W, H, u, fis, refl);
 
-  let disp = S.vDecal / 100 * (mode === 'miroir' ? 28 : 12) * u * (1 + aBass * 0.6 + aBeat * 1.5);
+  let disp = S.vDecal / 100 * 28 * u * (1 + aBass * 0.6 + aBeat * 1.5);
   if (mv === 'pulsation') disp *= 0.5 + (0.5 + 0.5 * Math.sin(t * w * 1.6));
-  const rotAmp = S.vDecal / 100 * (mode === 'miroir' ? 0.07 : 0.025);
-  const [ix, iy] = mode === 'impact' ? impactPoint(W, H) : [W / 2, H / 2];
-
-  ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);       // les fissures laissent voir le noir
+  const rotAmp = S.vDecal / 100 * 0.07;
+  ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
   for (const s of SHARDS){
-    if (mode === 'miroir' && s.h1 > 0.965) continue;                          // éclat tombé
-    let dx, dy;
-    if (mode === 'impact'){
-      const vx = s.cx - ix, vy = s.cy - iy, l = Math.hypot(vx, vy) || 1, near = clamp(1 - l / (L * 0.9), 0.15, 1);
-      dx = vx / l * disp * (0.3 + 0.7 * s.h1) * near * 1.6 + (s.h2 - 0.5) * disp * 0.4;
-      dy = vy / l * disp * (0.3 + 0.7 * s.h1) * near * 1.6 + (s.h3 - 0.5) * disp * 0.4;
-    } else {
-      const a = s.h1 * 6.2832, m = disp * (0.3 + 0.7 * s.h2);
-      dx = Math.cos(a) * m; dy = Math.sin(a) * m + s.h3 * disp * 0.5;
-    }
+    if (s.h1 > 0.965) continue;                                   // éclat tombé
+    const a = s.h1 * 6.2832, m = disp * (0.3 + 0.7 * s.h2);
+    const dx = Math.cos(a) * m, dy = Math.sin(a) * m + s.h3 * disp * 0.5;
     let rot = (s.h3 - 0.5) * 2 * rotAmp;
     if (mv === 'flux') rot += Math.sin(t * w + s.h1 * 6.28) * rotAmp * 0.8;
-    const sc = 1 + (s.h2 - 0.5) * (mode === 'miroir' ? 0.06 : 0.02);
+    const sc = 1 + (s.h2 - 0.5) * 0.06;
     ctx.save();
     ctx.translate(s.cx + dx, s.cy + dy); ctx.rotate(rot); ctx.scale(sc, sc); ctx.translate(-s.cx, -s.cy);
     ctx.clip(s.path);
     const bx = Math.max(0, Math.floor(s.x0) - 2), by = Math.max(0, Math.floor(s.y0) - 2);
     const bw = Math.min(W, Math.ceil(s.x1) + 2) - bx, bh = Math.min(H, Math.ceil(s.y1) + 2) - by;
     if (bw > 0 && bh > 0) ctx.drawImage(gCv, bx, by, bw, bh, bx, by, bw, bh);
-    // Reflet sur certains éclats
     if (refl > 0 && s.h2 < refl * 0.8){
       const g = ctx.createLinearGradient(s.x0, s.y0, s.x1, s.y1), k = (0.08 + 0.25 * refl * s.h3).toFixed(3);
       g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,' + k + ')'); g.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = g; ctx.fillRect(bx, by, bw, bh);
     }
-    // Arête de verre
     if (fis > 0){ ctx.lineWidth = Math.max(1, 1.6 * u); ctx.strokeStyle = 'rgba(255,255,255,' + (0.55 * fis).toFixed(3) + ')'; ctx.stroke(s.path); }
     ctx.restore();
-  }
-  // Point d'impact : zone écrasée, micro-fissures et éclat de lumière
-  if (mode === 'impact' && fis > 0){
-    const q = new Path2D(), rr = mulberry32(S.seed * 41 + 1), r0 = 0.012 * L;
-    for (let k = 0; k < 28; k++){ const a = rr() * 6.2832, l = (0.01 + rr() * 0.05) * L; q.moveTo(ix, iy); q.lineTo(ix + Math.cos(a) * l, iy + Math.sin(a) * l); }
-    q.moveTo(ix + r0, iy); q.arc(ix, iy, r0, 0, 6.2832);
-    ctx.lineWidth = Math.max(0.7, 0.8 * u); ctx.strokeStyle = pal.forme; ctx.globalAlpha = 0.8 * fis; ctx.stroke(q);
-    const R = 0.08 * L, g = ctx.createRadialGradient(ix, iy, 0, ix, iy, R);
-    g.addColorStop(0, 'rgba(255,255,255,' + (0.35 * fis).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(ix - R, iy - R, R * 2, R * 2);
   }
   ctx.globalAlpha = 1;
 }
@@ -1488,7 +1499,7 @@ function render(now){
   if (S.dither !== 'aucun') drawDither(W, H, u, pal, src.type === 'video');
   if (S.memoire === 'echo') drawEcho(W, H, u, anim);
   if (S.memoire === 'archive' || S.memoire === 'glyphes'){
-    updateMemory(W, H, u, pal, src.type === 'video' || S.mouvement !== 'aucun');
+    updateMemory(W, H, u, pal, anim);
     ctx.globalAlpha = S.mOpa / 100; ctx.globalCompositeOperation = BLEND[S.mFusion] || 'source-over';
     ctx.drawImage(mCv, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   }
@@ -1856,82 +1867,135 @@ function setExportUI(on){
    25. INTERFACE : construction du panneau
    ========================================================== */
 const OUI_NON = [['oui', 'Oui'], ['non', 'Non']];
+const MEM_ON = () => S.memoire !== 'aucune';
+const MEM_CELLS = () => S.memoire === 'archive' || S.memoire === 'glyphes';
 const SECTIONS = [
-  { t: 'Cadrage', open: true, items: [
+  { t: 'Style', key: 'style', items: [
+    { html: '<div class="styles" id="styles"></div>' },
+    { note: "Un style règle tout d'un coup. Ajuste ensuite à ton goût." } ] },
+  { t: 'Export', key: 'export', items: [
+    { html: '<div id="dureeSlot"></div><div class="row2"><button class="btn" id="bPng" type="button">Exporter PNG</button><button class="btn primary" id="bVid" type="button">Exporter vidéo</button></div><div class="progress" id="prog" hidden><i id="progBar"></i></div><p class="note" id="vidNote" hidden></p>' },
+    { note: 'Ton image, ta vidéo et ton son restent sur ton appareil.' } ] },
+  { t: 'Cadrage', key: 'cadrage', items: [
     { seg: 'format', label: 'Format de sortie', cols: 4, opts: [['original', 'Original'], ['4:5', '4:5'], ['9:16', '9:16'], ['1:1', '1:1']] } ] },
-  { t: 'Image source', open: true, items: [
+  { t: 'Image source', key: 'image', items: [
     { seg: 'couleur', label: 'Couleur', cols: 3, opts: [['nb', 'Noir et blanc'], ['original', 'Original'], ['teinte', 'Teinté']] },
     { range: 'opacite', label: "Opacité de l'image source", min: 0 } ] },
-  { t: 'Analyse', items: [
+  { t: 'Analyse', key: 'analyse', items: [
     { range: 'densite', label: 'Densité des points' },
     { range: 'seuil', label: 'Seuil des contours' } ] },
-  { t: 'Formes', items: [
+  { t: 'Formes', key: 'formes', items: [
     { seg: 'forme', label: 'Forme', cols: 3, opts: [['cercle', 'Cercle'], ['carre', 'Carré'], ['losange', 'Losange'], ['croix', 'Croix'], ['crochets', 'Crochets'], ['mixte', 'Mixte']] },
     { range: 'taille', label: 'Taille des formes' } ] },
-  { t: 'Liens', badge: 'liens', items: [
+  { t: 'Liens', key: 'liens', badge: 'liens', items: [
     { seg: 'liens', label: 'Liens', cols: 2, opts: [['contour', 'Contour'], ['delaunay', 'Delaunay'], ['proximite', 'Proximité'], ['aucun', 'Aucun']] },
     { range: 'distance', label: 'Distance max des liens', dep: ['liens', 'aucun'] },
     { range: 'epaisseur', label: 'Épaisseur des lignes' } ] },
-  { t: 'Contours lumineux', badge: 'contours', items: [
+  { t: 'Contours lumineux', key: 'contours', badge: 'contours', items: [
     { range: 'contours', label: 'Intensité des contours', min: 0 },
     { range: 'niveaux', label: 'Nombre de niveaux', dep: ['contours', 0] } ] },
-  { t: 'Vitre', badge: 'vitre', items: [
-    { seg: 'vitre', label: 'Effet', cols: 2, opts: [['aucune', 'Aucun'], ['impact', 'Impact'], ['miroir', 'Miroir brisé'], ['vitrail', 'Vitrail']] },
-    { seg: 'vImpact', label: "Point d'impact", cols: 3, opts: [['auto', 'Auto'], ['centre', 'Centre'], ['toucher', 'Toucher']], dep: ['vitre', 'aucune'] },
+  { t: 'Éclats', key: 'vitre', badge: 'vitre', items: [
+    { seg: 'vitre', label: 'Effet', cols: 3, opts: [['aucune', 'Aucun'], ['miroir', 'Miroir brisé'], ['vitrail', 'Vitrail']] },
     { range: 'vEclats', label: "Nombre d'éclats", dep: ['vitre', 'aucune'] },
-    { range: 'vDecal', label: 'Décalage des éclats', min: 0, dep: ['vitre', 'aucune'] },
+    { range: 'vDecal', label: 'Décalage des éclats', min: 0, dep: ['vitre', 'aucune'], only: () => S.vitre !== 'vitrail' },
     { range: 'vFissures', label: 'Fissures et plomb', min: 0, dep: ['vitre', 'aucune'] },
     { range: 'vReflets', label: 'Reflets', min: 0, dep: ['vitre', 'aucune'] },
-    { note: "Impact : touche l'image pour placer le point d'impact. Avec un son, les éclats sautent sur les temps forts." } ] },
-  { t: 'Prisme', badge: 'prisme', items: [
+    { note: 'Avec un son, les éclats du miroir sautent sur les temps forts.' } ] },
+  { t: 'Prisme', key: 'prisme', badge: 'prisme', items: [
     { seg: 'prisme', label: 'Effet', cols: 3, opts: [['aucun', 'Aucun'], ['rvb', 'Séparation RVB'], ['tranches', 'Tranches glitch']] },
     { range: 'pForce', label: 'Intensité', dep: ['prisme', 'aucun'] } ] },
-  { t: 'Personnes', badge: 'personne', items: [
+  { t: 'Personnes', key: 'personnes', badge: 'personne', items: [
     { seg: 'personne', label: 'Détection', cols: 2, opts: [['aucun', 'Aucune'], ['silhouette', 'Silhouette'], ['squelette', 'Squelette'], ['visage', 'Maillage visage'], ['complet', 'Complet']] },
     { seg: 'protege', label: 'Protection des visages', cols: 3, opts: [['non', 'Non'], ['reduire', 'Réduire'], ['exclure', 'Exclure']] },
     { note: "Silhouette : la géométrie reste sur la personne. Protection : moins ou pas de formes sur les visages. Demande Internet : environ 15 Mo au premier usage." } ] },
-  { t: 'Dither', badge: 'dither', items: [
+  { t: 'Dither', key: 'dither', badge: 'dither', items: [
     { seg: 'dither', label: 'Algorithme', cols: 3, opts: [['aucun', 'Aucun'], ['atkinson', 'Atkinson'], ['floyd', 'Floyd'], ['bayer', 'Bayer'], ['bruit', 'Bruit bleu']] },
     { range: 'dGrain', label: 'Taille du grain', dep: ['dither', 'aucun'] },
     { range: 'dSeuil', label: 'Seuil encre / papier', dep: ['dither', 'aucun'] },
     { range: 'dOpa', label: 'Opacité du dither', dep: ['dither', 'aucun'] },
     { seg: 'dFusion', label: 'Fusion', cols: 2, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superposition']], dep: ['dither', 'aucun'] } ] },
-  { t: 'Pixel memory', badge: 'memoire', items: [
-    { seg: 'memoire', label: 'Programme', cols: 2, opts: [['aucune', 'Aucun'], ['archive', 'Cellules'], ['echo', 'Écho horizontal'], ['glyphes', 'Glyphes']] },
-    { seg: 'mRendu', label: 'Rendu des cellules', cols: 3, opts: [['mosaique', 'Mosaïque'], ['contour', 'Contour'], ['plein', 'Plein']], dep: ['memoire', 'aucune'] },
-    { range: 'mCouv', label: 'Couverture', dep: ['memoire', 'aucune'] },
-    { range: 'mCell', label: 'Taille des cellules', dep: ['memoire', 'aucune'] },
-    { range: 'mSeuil', label: 'Seuil binaire', dep: ['memoire', 'aucune'] },
-    { range: 'mFen', label: 'Fenêtres mémoire', min: 0, dep: ['memoire', 'aucune'] },
-    { range: 'mOpa', label: 'Opacité', dep: ['memoire', 'aucune'] },
-    { seg: 'mFusion', label: 'Fusion', cols: 2, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superposition']], dep: ['memoire', 'aucune'] },
-    { note: 'Pour garder la photo nette : rendu Mosaïque ou Contour, couverture basse, et image source en couleur Original à 100 %.' } ] },
-  { t: 'Grille', badge: 'grille', items: [
+  { t: 'Pixel memory', key: 'memoire', badge: 'memoire', items: [
+    { html: '<div class="head"><span>Préréglages</span></div><div class="chips" id="memChips"></div>' },
+    { seg: 'memoire', label: 'Programme', cols: 4, opts: [['aucune', 'Aucun'], ['archive', 'Cellules'], ['glyphes', 'Glyphes'], ['echo', 'Écho']] },
+    { sub: 'Cellules', only: MEM_ON },
+    { seg: 'mRendu', label: 'Rendu', cols: 4, opts: [['bloc', 'Bloc'], ['contour', 'Contour'], ['point', 'Point'], ['barre', 'Barre']], only: () => S.memoire === 'archive' },
+    { range: 'mCell', label: 'Taille', only: MEM_ON },
+    { range: 'mRatio', label: 'Proportion (50 = carré)', min: 0, only: MEM_ON },
+    { range: 'mEcart', label: 'Espacement', min: 0, only: MEM_CELLS },
+    { range: 'mEntropie', label: 'Entropie (désordre)', min: 0, only: MEM_CELLS },
+    { sub: 'Sélection', only: MEM_CELLS },
+    { seg: 'mCible', label: 'Cibler', cols: 4, opts: [['clairs', 'Clairs'], ['sombres', 'Sombres'], ['contours', 'Contours'], ['tout', 'Tout']], only: MEM_CELLS },
+    { range: 'mSeuil', label: 'Seuil de luminosité', only: () => MEM_CELLS() && (S.mCible === 'clairs' || S.mCible === 'sombres') },
+    { range: 'mCouv', label: 'Couverture', only: MEM_ON },
+    { range: 'mPrio', label: 'Priorité aux contours', min: 0, only: MEM_CELLS },
+    { sub: 'Couleur', only: MEM_CELLS },
+    { seg: 'mCouleur', label: 'Couleur des cellules', cols: 4, opts: [['photo', 'Photo'], ['palette', 'Palette'], ['mono', 'N et B'], ['inverse', 'Inversée']], only: MEM_CELLS },
+    { range: 'mNiveaux', label: 'Niveaux de couleur', only: MEM_CELLS },
+    { range: 'mContraste', label: 'Contraste (50 = normal)', min: 0, only: MEM_CELLS },
+    { range: 'mAccent', label: 'Accent sur les contours', min: 0, only: MEM_CELLS },
+    { range: 'mSep', label: 'Lignes entre les pixels', min: 0, only: () => S.memoire === 'archive' && S.mRendu === 'bloc' },
+    { sub: 'Mémoire', only: MEM_ON },
+    { range: 'mDecal', label: 'Décalage (mémoire corrompue)', min: 0, only: MEM_CELLS },
+    { range: 'mRefresh', label: 'Rafraîchissement en mouvement', min: 0, only: MEM_ON },
+    { sub: 'Traînées', only: () => S.memoire === 'echo' },
+    { range: 'mEchoLong', label: 'Longueur', only: () => S.memoire === 'echo' },
+    { seg: 'mEchoDir', label: 'Direction', cols: 2, opts: [['horizontal', 'Horizontale'], ['vertical', 'Verticale']], only: () => S.memoire === 'echo' },
+    { sub: 'Fenêtres mémoire', only: MEM_ON },
+    { range: 'mFen', label: 'Nombre de fenêtres', min: 0, only: MEM_ON },
+    { range: 'mFenTaille', label: 'Taille des fenêtres', only: () => S.memoire !== 'aucune' && S.mFen > 0 },
+    { seg: 'mFenCadre', label: 'Cadre et étiquette', cols: 2, opts: OUI_NON, only: () => S.memoire !== 'aucune' && S.mFen > 0 },
+    { sub: 'Mélange', only: MEM_ON },
+    { range: 'mOpa', label: 'Opacité', only: MEM_ON },
+    { seg: 'mFusion', label: 'Fusion', cols: 4, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superp.']], only: MEM_ON },
+    { note: 'Photo nette : rendu Bloc ou Contour, couleur Photo, couverture basse. Proportion haute : pixels larges, basse : pixels hauts. Rafraîchissement 0 : motif figé en vidéo.', only: MEM_ON } ] },
+  { t: 'Grille', key: 'grille', badge: 'grille', items: [
     { seg: 'grille', label: 'Programme', cols: 2, opts: [['aucune', 'Aucune'], ['mesure', 'Mesure'], ['editoriale', 'Éditoriale'], ['fragments', 'Fragments']] },
     { range: 'gModules', label: 'Nombre de modules', dep: ['grille', 'aucune'] },
     { range: 'gOpa', label: 'Opacité de la grille', dep: ['grille', 'aucune'] } ] },
-  { t: 'Chaîne de cercles', badge: 'chaine', items: [
+  { t: 'Chaîne de cercles', key: 'cercles', badge: 'chaine', items: [
     { seg: 'chaine', label: 'Afficher', cols: 2, opts: OUI_NON },
     { range: 'cNb', label: 'Nombre de cercles', dep: ['chaine', 'non'] },
     { range: 'cAngle', label: 'Angle', min: 0, dep: ['chaine', 'non'] },
     { range: 'cRayon', label: 'Rayon de départ', dep: ['chaine', 'non'] },
     { range: 'cRatio', label: 'Rapport de taille', dep: ['chaine', 'non'] } ] },
-  { t: 'Surface', items: [
+  { t: 'Surface', key: 'surface', items: [
     { seg: 'palette', label: 'Palette', cols: 2, swatch: true, opts: Object.keys(PALETTES).map(k => [k, PALETTES[k].nom]) },
     { range: 'lignes', label: 'Lignes de balayage', min: 0 },
     { range: 'grain', label: 'Grain', min: 0 } ] },
-  { t: 'Annotations', items: [
+  { t: 'Annotations', key: 'annotations', items: [
     { seg: 'annot', label: 'Cercles et coordonnées', cols: 2, opts: OUI_NON },
     { seg: 'cadre', label: 'Cadre et légende', cols: 2, opts: OUI_NON } ] },
-  { t: 'Mouvement', badge: 'mouvement', items: [
+  { t: 'Mouvement', key: 'mouvement', badge: 'mouvement', items: [
     { seg: 'mouvement', label: 'Mouvement', cols: 2, opts: [['aucun', 'Aucun'], ['pulsation', 'Pulsation'], ['balayage', 'Balayage'], ['flux', 'Flux']] },
     { range: 'vitesse', label: 'Vitesse du mouvement', dep: ['mouvement', 'aucun'] } ] },
-  { t: 'Son', id: 'secSon', items: [
+  { t: 'Son', key: 'son', items: [
     { html: '<p class="audio-name" id="aName">Aucun son</p><div class="row3"><button class="btn" id="aLoad" type="button">Ajouter</button><button class="btn" id="aPlay" type="button" disabled>Lire le son</button><button class="btn" id="aDel" type="button" disabled>Retirer</button></div>' },
     { range: 'sonForce', label: 'Réaction au son', min: 0, dep: ['@audio'] },
     { seg: 'sonVideo', label: 'Son dans la vidéo exportée', cols: 2, opts: OUI_NON, dep: ['@audio'] },
     { note: 'Basses : les formes gonflent. Médiums : les liens s\'épaississent. Aigus : trame et grain. MP3, WAV ou M4A, 3 min et 15 Mo maximum.' } ] }
 ];
+// Icônes du menu (traits simples, 24 x 24)
+const ICONS = {
+  style: '<path d="M12 3l2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4z"/>',
+  export: '<path d="M12 4v11M7 10l5 5 5-5M4 20h16"/>',
+  cadrage: '<path d="M7 3v14h14M3 7h14v14"/>',
+  image: '<rect x="3" y="5" width="18" height="14"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.3"/>',
+  analyse: '<circle cx="10" cy="10" r="6"/><path d="M14.5 14.5L21 21M7 10h6M10 7v6"/>',
+  formes: '<circle cx="7" cy="7" r="3.5"/><rect x="13.5" y="3.5" width="7" height="7"/><path d="M7 13.5l4 7H3zM17 13v8M13 17h8"/>',
+  liens: '<circle cx="5" cy="18" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="19" cy="16" r="2"/><path d="M6 16.3l5-8.5M13.4 7.5l4.4 6.8M7 17.7l10-1.4"/>',
+  contours: '<path d="M12 3c5 0 9 3.5 9 8s-4 10-9 10-9-4.5-9-9 4-9 9-9z"/><path d="M12 7.5c3 0 5 2 5 4s-2 5-5 5-5-2-5-4.5 2-4.5 5-4.5z"/><circle cx="12" cy="12" r="1"/>',
+  vitre: '<path d="M3 3h18v18H3zM3 10l8 2 3-9M11 12l-4 9M11 12l10 3M14 3l2 12"/>',
+  prisme: '<path d="M12 4l8 15H4z"/><path d="M1 10l7 2.5M16 12l7-3.5M16.6 13.5H23M17 15l6 3.5"/>',
+  personnes: '<circle cx="12" cy="7" r="3.5"/><path d="M5 21c0-4 3-7.5 7-7.5s7 3.5 7 7.5"/>',
+  dither: '<path d="M4 4h3v3H4zM10.5 4h3v3h-3zM17 4h3v3h-3zM7.2 10.5h3v3h-3zM13.8 10.5h3v3h-3zM4 17h3v3H4zM10.5 17h3v3h-3zM17 17h3v3h-3z"/>',
+  memoire: '<path d="M3 3h6v6H3zM15 3h6v6h-6zM9 9h6v6H9zM3 15h6v6H3zM15 15h6v6h-6z"/>',
+  grille: '<rect x="3" y="3" width="18" height="18"/><path d="M3 10h18M10 3v18M10 15h11M15 10v11"/>',
+  cercles: '<circle cx="7.5" cy="12" r="5.5"/><circle cx="14.5" cy="12" r="3.5"/><circle cx="19.5" cy="12" r="2"/>',
+  surface: '<path d="M3 5h18M3 9h18M3 13h18M3 17h18M3 21h18"/>',
+  annotations: '<circle cx="10" cy="14" r="6"/><path d="M10 5v4M10 19v3M1 14h4M15 14h4M15 4h6M17 7h4"/>',
+  mouvement: '<path d="M2 12c2.5-6 5-6 7 0s4.5 6 7 0 4.5-6 6 0"/>',
+  son: '<path d="M4 10v4M8 6v12M12 9v6M16 3v18M20 9v6"/>'
+};
 const RANGE_MIN = {}, DEPS = [], BADGES = {};
 
 function el(tag, cls, html){ const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
@@ -1958,24 +2022,28 @@ function buildRange(it){
   return box;
 }
 function buildPanel(){
-  const root = $('#settings');
-  for (const sec of SECTIONS){
-    const d = el('details', 'sec'); if (sec.open) d.open = true; if (sec.id) d.id = sec.id;
-    const sum = el('summary', null, '<span>' + sec.t + '</span>' + (sec.badge ? '<span class="badge" id="b-' + sec.badge + '"></span>' : ''));
-    if (sec.badge) BADGES[sec.badge] = sec;
-    d.appendChild(sum);
-    const body = el('div', 'body');
+  const root = $('#panes'), rail = $('#rail');
+  SECTIONS.forEach((sec, n) => {
+    const pane = el('div', 'pane'); pane.id = 'pane-' + sec.key; pane.hidden = true;
+    pane.setAttribute('role', 'tabpanel');
     for (const it of sec.items){
       let node;
-      if (it.html){ node = el('div', null, it.html); }
-      else if (it.note){ node = el('p', 'note', it.note); }
+      if (it.html) node = el('div', null, it.html);
+      else if (it.note) node = el('p', 'note', it.note);
+      else if (it.sub) node = el('h3', 'sub', it.sub);
       else node = it.seg ? buildSeg(it) : buildRange(it);
-      if (it.dep) DEPS.push([node, it.dep]);
-      body.appendChild(node);
+      const off = it.dep ? (it.dep[0] === '@audio' ? () => !AU.el : () => S[it.dep[0]] === it.dep[1]) : null;
+      if (off || it.only) DEPS.push([node, off, it.only || null]);
+      pane.appendChild(node);
     }
-    d.appendChild(body);
-    root.appendChild(d);
-  }
+    root.appendChild(pane);
+    if (sec.badge) BADGES[sec.key] = sec.badge;
+    // Bouton du menu : uniquement l'icône
+    const b = el('button', 'ri', '<svg viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[sec.key] || '') + '</svg><i class="dot"></i>');
+    b.type = 'button'; b.dataset.i = n; b.setAttribute('role', 'tab'); b.setAttribute('aria-label', sec.t); b.title = sec.t;
+    b.addEventListener('click', () => goTo(n, true));
+    rail.appendChild(b);
+  });
   $('#dureeSlot').appendChild(buildSeg({ seg: 'duree', label: 'Durée de la vidéo', cols: 4, opts: [['3', '3 s'], ['5', '5 s'], ['8', '8 s'], ['10', '10 s']] }));
   const st = $('#styles');
   for (const k of Object.keys(STYLES)){
@@ -1983,17 +2051,78 @@ function buildPanel(){
     b.addEventListener('click', () => applyStyle(k));
     st.appendChild(b);
   }
+  const chips = $('#memChips');
+  for (const k of Object.keys(MEM_PRESETS)){
+    const b = el('button', 'btn', MEM_PRESETS[k].nom); b.type = 'button';
+    b.addEventListener('click', () => { Object.assign(S, memPreset(k)); syncUI(); dirty = true; notify('Mémoire : ' + MEM_PRESETS[k].nom + '.'); });
+    chips.appendChild(b);
+  }
+}
+
+/* Menu à icônes : on fait défiler de gauche à droite,
+   l'icône au centre ouvre son réglage */
+let curSec = -1, railTimer = 0, railRaf = 0;
+function goTo(n, scroll){
+  n = clamp(n, 0, SECTIONS.length - 1);
+  const rail = $('#rail'), items = rail.children;
+  if (scroll){
+    const it = items[n];
+    rail.scrollTo({ left: it.offsetLeft - (rail.clientWidth - it.offsetWidth) / 2, behavior: 'smooth' });
+  }
+  if (n === curSec) return;
+  curSec = n;
+  SECTIONS.forEach((sec, k) => {
+    $('#pane-' + sec.key).hidden = k !== n;
+    items[k].classList.toggle('cur', k === n);
+    items[k].setAttribute('aria-selected', String(k === n));
+    items[k].tabIndex = k === n ? 0 : -1;
+  });
+  $('#paneTitle').textContent = SECTIONS[n].t;
+  refreshDeps();
+}
+function railCenter(){
+  const rail = $('#rail'), mid = rail.scrollLeft + rail.clientWidth / 2;
+  let best = 0, bd = Infinity;
+  [...rail.children].forEach((it, k) => {
+    const c = it.offsetLeft + it.offsetWidth / 2, dd = Math.abs(c - mid);
+    if (dd < bd){ bd = dd; best = k; }
+    // Effet loupe : l'icône centrale grossit, les autres s'effacent
+    const t = Math.min(1, dd / 160);
+    it.style.transform = 'scale(' + (1.25 - t * 0.45).toFixed(3) + ')';
+    it.style.opacity = (1 - t * 0.6).toFixed(3);
+  });
+  return best;
+}
+function bindRail(){
+  const rail = $('#rail');
+  rail.addEventListener('scroll', () => {
+    if (!railRaf) railRaf = requestAnimationFrame(() => { railRaf = 0; railCenter(); });
+    clearTimeout(railTimer);
+    railTimer = setTimeout(() => goTo(railCenter(), false), 90);
+  }, { passive: true });
+  rail.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight'){ e.preventDefault(); goTo(curSec + 1, true); rail.children[curSec].focus(); }
+    if (e.key === 'ArrowLeft'){ e.preventDefault(); goTo(curSec - 1, true); rail.children[curSec].focus(); }
+  });
+  window.addEventListener('resize', () => goTo(curSec, true));
+  goTo(0, false);
+  requestAnimationFrame(() => { goTo(0, true); railCenter(); });
 }
 
 // Grise les réglages dont la couche est éteinte
 function refreshDeps(){
-  for (const [node, dep] of DEPS){
-    const off = dep[0] === '@audio' ? !AU.el : S[dep[0]] === dep[1];
-    node.classList.toggle('off', off);
-    node.querySelectorAll('input').forEach(i => { i.disabled = off; });
+  for (const [node, off, only] of DEPS){
+    const hide = only ? !only() : false, o = off ? off() : false;
+    node.classList.toggle('hide', hide);
+    node.classList.toggle('off', o);
+    node.querySelectorAll('input').forEach(i => { i.disabled = o; });
   }
-  const label = { liens: S.liens, contours: S.contours > 0 ? 'oui' : 'non', personne: S.personne, dither: S.dither, memoire: S.memoire, vitre: S.vitre, prisme: S.prisme, grille: S.grille, chaine: S.chaine, mouvement: S.mouvement };
-  for (const k in BADGES){ const b = $('#b-' + k); if (b) b.textContent = String(label[k]).toUpperCase(); }
+  const label = { liens: S.liens, contours: S.contours > 0 ? 'oui' : 'non', personnes: S.personne, dither: S.dither, memoire: S.memoire, vitre: S.vitre, prisme: S.prisme, grille: S.grille, cercles: S.chaine, mouvement: S.mouvement };
+  const live = { liens: S.liens !== 'aucun', contours: S.contours > 0, personnes: S.personne !== 'aucun' || S.protege !== 'non', dither: S.dither !== 'aucun', memoire: S.memoire !== 'aucune', vitre: S.vitre !== 'aucune', prisme: S.prisme !== 'aucun', grille: S.grille !== 'aucune', cercles: S.chaine === 'oui', mouvement: S.mouvement !== 'aucun', son: !!AU.el };
+  const rail = $('#rail');
+  SECTIONS.forEach((sec, k) => { if (rail.children[k]) rail.children[k].classList.toggle('live', !!live[sec.key]); });
+  const sec = SECTIONS[curSec];
+  if (sec) $('#paneBadge').textContent = sec.key in label ? String(label[sec.key]).toUpperCase() : '';
 }
 function syncUI(){
   document.querySelectorAll('input[type=range]').forEach(r => { r.value = S[r.name]; paintRange(r); });
@@ -2004,7 +2133,7 @@ function syncUI(){
 function paintRange(r){
   const min = +r.min;
   r.style.setProperty('--p', ((r.value - min) / (100 - min) * 100) + '%');
-  $('#o-' + r.name).textContent = String(r.value).padStart(3, '0');
+  $('#o-' + r.name).textContent = (r.name === 'mNiveaux' && +r.value >= 100) ? 'MAX' : String(r.value).padStart(3, '0');
 }
 function applyPalette(){
   const p = PALETTES[S.palette];
@@ -2104,22 +2233,8 @@ function bindEvents(){
     if (v.paused) v.play().then(() => { $('#bPlay').textContent = 'Pause'; }).catch(() => notify('Lecture impossible.', true));
     else { v.pause(); $('#bPlay').textContent = 'Lecture'; }
   });
-  // Toucher l'image : place le point d'impact de la vitre
-  let tap = null;
-  cv.addEventListener('pointerdown', e => { tap = [e.clientX, e.clientY]; });
-  cv.addEventListener('pointerup', e => {
-    if (!tap || S.vitre !== 'impact' || Math.hypot(e.clientX - tap[0], e.clientY - tap[1]) > 10) return;
-    const r = cv.getBoundingClientRect();
-    S.impX = clamp((e.clientX - r.left) / r.width, 0, 1); S.impY = clamp((e.clientY - r.top) / r.height, 0, 1);
-    S.vImpact = 'toucher'; syncUI(); dirty = true; notify("Point d'impact placé.");
-  });
   $('#bPng').addEventListener('click', exportPng);
   $('#bVid').addEventListener('click', exportVideo);
-  $('#toggle').addEventListener('click', () => {
-    const s = $('#settings'), open = s.hidden;
-    s.hidden = !open; $('#toggle').setAttribute('aria-expanded', String(open));
-    $('#toggleSign').textContent = open ? '−' : '+';
-  });
   if ('ResizeObserver' in window) new ResizeObserver(fitCanvas).observe($('#frame'));
   else window.addEventListener('resize', fitCanvas);
 }
@@ -2128,7 +2243,7 @@ function bindEvents(){
    28. DÉMARRAGE
    ========================================================== */
 function init(){
-  buildPanel(); bindEvents(); syncUI(); makeGrain(); updateAudioUI();
+  buildPanel(); bindEvents(); bindRail(); syncUI(); makeGrain(); updateAudioUI();
   if (!canRecord){
     $('#bVid').disabled = true;
     const n = $('#vidNote'); n.hidden = false;
