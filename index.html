@@ -117,6 +117,8 @@ details.sec .body{padding:0 0 10px}
 .pane[hidden]{display:none}
 .sub{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);font-weight:500;margin:18px 0 2px;padding-top:12px;border-top:1px dashed var(--rule)}
 .ctl.hide,.sub.hide,.note.hide{display:none}
+.txt{width:100%;min-height:44px;margin-top:8px;padding:0 12px;background:var(--bg2);border:1px solid var(--rule2);border-radius:0;font-size:16px}
+.txt:focus{border-color:var(--acc);outline:none}
 .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 4px}
 .chips .btn{min-height:40px;font-size:10px}
 
@@ -249,7 +251,11 @@ const S = {
   // Chaîne de cercles
   chaine: 'non', cNb: 40, cAngle: 30, cRayon: 35, cRatio: 55,
   // Son
-  sonForce: 60, sonVideo: 'oui'
+  sonForce: 60, sonVideo: 'oui',
+  // Finitions
+  fHalo: 0, fVignette: 0, fVirage: 0, fFlou: 0, fFuite: 0, fFrange: 0, fBandes: 0,
+  // Texte
+  titre: '', sousTitre: '', tPos: 'bas', tTaille: 40, tStyle: 'serif'
 };
 
 const PALETTES = {
@@ -275,7 +281,7 @@ const MEM_PRESETS = {
 };
 const memPreset = k => Object.assign({}, MEM_BASE, MEM_PRESETS[k].v);
 
-const LAYERS_OFF = { dither: 'aucun', memoire: 'aucune', grille: 'aucune', chaine: 'non', contours: 0, vitre: 'aucune', prisme: 'aucun' };
+const LAYERS_OFF = { dither: 'aucun', memoire: 'aucune', grille: 'aucune', chaine: 'non', contours: 0, vitre: 'aucune', prisme: 'aucun', fHalo: 0, fVignette: 0, fVirage: 0, fFlou: 0, fFuite: 0, fFrange: 0, fBandes: 0 };
 const STYLES = {
   constellation: { nom: 'Constellation', v: { couleur: 'nb', opacite: 88, densite: 55, seuil: 22, liens: 'contour', distance: 45, epaisseur: 15, forme: 'mixte', taille: 30, lignes: 40, grain: 12, annot: 'oui', cadre: 'oui', palette: 'cyan' } },
   atlas: { nom: 'Atlas des contours', v: { couleur: 'original', opacite: 100, contours: 70, niveaux: 45, densite: 20, seuil: 35, liens: 'aucun', distance: 30, epaisseur: 10, forme: 'cercle', taille: 10, lignes: 0, grain: 6, annot: 'non', cadre: 'non', palette: 'solaire' } },
@@ -290,14 +296,18 @@ const STYLES = {
   vitrail: { nom: 'Vitrail', v: { couleur: 'original', opacite: 100, densite: 15, seuil: 35, liens: 'aucun', forme: 'cercle', taille: 10, lignes: 0, grain: 6, annot: 'non', cadre: 'non', palette: 'solaire', vitre: 'vitrail', vEclats: 55, vFissures: 60, vReflets: 40 } },
   prisme: { nom: 'Prisme glitch', v: { couleur: 'original', opacite: 100, densite: 25, seuil: 28, liens: 'aucun', forme: 'crochets', taille: 24, lignes: 40, grain: 10, annot: 'oui', cadre: 'oui', palette: 'rouge', prisme: 'tranches', pForce: 45 } },
   editorial: { nom: 'Grille éditoriale', v: { couleur: 'original', opacite: 100, densite: 35, seuil: 26, liens: 'contour', distance: 40, epaisseur: 12, forme: 'mixte', taille: 24, lignes: 15, grain: 8, annot: 'oui', cadre: 'oui', palette: 'cyan', grille: 'fragments', gModules: 45, gOpa: 60 } },
-  echo: { nom: 'Écho horizontal', v: Object.assign(memPreset('echo'), { couleur: 'original', opacite: 100, densite: 30, seuil: 28, liens: 'aucun', forme: 'crochets', taille: 22, lignes: 50, grain: 10, annot: 'oui', cadre: 'oui', palette: 'solaire', mOpa: 85 }) }
+  echo: { nom: 'Écho horizontal', v: Object.assign(memPreset('echo'), { couleur: 'original', opacite: 100, densite: 30, seuil: 28, liens: 'aucun', forme: 'crochets', taille: 22, lignes: 50, grain: 10, annot: 'oui', cadre: 'oui', palette: 'solaire', mOpa: 85 }) },
+  argentique: { nom: 'Douceur argentique', v: { couleur: 'original', opacite: 100, densite: 20, seuil: 30, liens: 'contour', distance: 30, epaisseur: 8, forme: 'mixte', taille: 16, lignes: 0, grain: 22, annot: 'non', cadre: 'non', palette: 'mono', fHalo: 35, fVignette: 45, fVirage: 35, fFrange: 15 } },
+  reve: { nom: 'Rêve flou', v: { couleur: 'original', opacite: 100, densite: 15, seuil: 32, liens: 'aucun', forme: 'cercle', taille: 10, lignes: 0, grain: 8, annot: 'non', cadre: 'non', palette: 'solaire', fFlou: 70, fHalo: 50, fFuite: 45, fVignette: 20 } },
+  cinema: { nom: 'Cinéma', v: { couleur: 'original', opacite: 100, densite: 18, seuil: 30, liens: 'aucun', forme: 'crochets', taille: 18, lignes: 8, grain: 14, annot: 'oui', cadre: 'non', palette: 'cyan', fBandes: 55, fVignette: 40, fVirage: 30, fFrange: 20, fHalo: 20 } },
+  portrait: { nom: 'Portrait suivi', v: Object.assign(memPreset('zoom'), { mFenCible: 'traits', mFenForme: 'rond', mZoom: 55, mFenPlace: 'proche', couleur: 'nb', opacite: 95, densite: 25, seuil: 28, liens: 'contour', distance: 30, epaisseur: 8, forme: 'mixte', taille: 16, lignes: 15, grain: 12, annot: 'non', cadre: 'oui', palette: 'mono', fVignette: 35, fHalo: 20 }) }
 };
 
 const MAXP = 1200;
 const POINT_KEYS = ['densite', 'seuil', 'distance', 'liens'];
 const CONTOUR_KEYS = ['contours', 'niveaux'];
 const GRID_KEYS = ['grille', 'gModules'];
-const PERSON_KEYS = ['personne', 'protege'];
+const PERSON_KEYS = ['personne', 'protege', 'memoire', 'mFenCible'];
 const threshold = () => 0.01 + S.seuil * 0.005;
 
 /* ==========================================================
@@ -813,11 +823,12 @@ const MODELS = {
   pose: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task'
 };
 const MP = { vision: null, files: null, seg: null, face: null, pose: null, loading: null, ts: 0 };
-let PMASK = null, PMW = 0, PMH = 0, FACES = [], POSES = [];
+let PMASK = null, PMW = 0, PMH = 0, FACES = [], POSES = [], faceLost = 0;
 
-const personActive = () => S.personne !== 'aucun' || S.protege !== 'non';
+const faceWin = () => S.memoire !== 'aucune' && (S.mFenCible === 'visages' || S.mFenCible === 'traits');
+const personActive = () => S.personne !== 'aucun' || S.protege !== 'non' || faceWin();
 const needSeg = () => S.personne === 'silhouette' || S.personne === 'complet';
-const needFace = () => S.personne === 'visage' || S.personne === 'complet' || S.protege !== 'non';
+const needFace = () => S.personne === 'visage' || S.personne === 'complet' || S.protege !== 'non' || faceWin();
 const needPose = () => S.personne === 'squelette' || S.personne === 'complet';
 const modelsReady = () => (!needSeg() || MP.seg) && (!needFace() || MP.face) && (!needPose() || MP.pose);
 
@@ -846,7 +857,7 @@ function ensureModels(){
       return true;
     } catch (e){
       console.warn(e);
-      S.personne = 'aucun'; S.protege = 'non'; syncUI();
+      S.personne = 'aucun'; S.protege = 'non'; if (faceWin()) S.mFenCible = 'forts'; syncUI();
       notify("Détection indisponible ici : elle demande Internet (version GitHub).", true);
       return false;
     } finally { MP.loading = null; }
@@ -867,7 +878,10 @@ function runDetection(){
         PMASK.set(a); PMW = m.width; PMH = m.height;
       });
     } else PMASK = null;
-    FACES = (needFace() && MP.face) ? (MP.face.detectForVideo(anaCv, ts).faceLandmarks || []) : [];
+    const found = (needFace() && MP.face) ? (MP.face.detectForVideo(anaCv, ts).faceLandmarks || []) : [];
+    // Visage perdu un instant : on garde la dernière position quelques images (évite le clignotement)
+    const now = performance.now();
+    if (found.length || src.type !== 'video' || now - faceLost > 400){ FACES = found; if (found.length) faceLost = now; }
     POSES = (needPose() && MP.pose) ? (MP.pose.detectForVideo(anaCv, ts).landmarks || []) : [];
   } catch (e){ console.warn(e); }
   buildWeights();
@@ -879,6 +893,7 @@ function detectStill(){
     if (!ok || src.type !== 'image' || !personActive()) return;
     anaCtx.drawImage(srcCv, 0, 0, AW, AH);
     runDetection(); needPts = true; dirty = true;
+    if (faceWin() && !FACES.length) notify('Aucun visage trouvé sur cette image : les fenêtres se placent sur les points forts.');
   });
 }
 
@@ -1281,15 +1296,48 @@ function edgeHit(P, cx, cy, tx, ty){
   return bt < Infinity ? [cx + dx * bt, cy + dy * bt] : [tx, ty];
 }
 
+// Repères du visage (MediaPipe) : œil gauche, œil droit, bouche
+const FACE_PARTS = {
+  'ŒIL G': [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246],
+  'ŒIL D': [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398],
+  'BOUCHE': [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185]
+};
+const FSMOOTH = {};
+// Boîtes à suivre : visages entiers ou yeux et bouche, lissées d'une image à l'autre
+function faceBoxes(W, H){
+  const out = [];
+  FACES.forEach((f, n) => {
+    const box = (idx, pad) => {
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (const i of idx){ const p = f[i]; if (!p) continue; x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y); }
+      const w = (x1 - x0) * W, h = (y1 - y0) * H, s = Math.max(w, h) * (1 + pad);
+      return { cx: (x0 + x1) / 2 * W, cy: (y0 + y1) / 2 * H, w: Math.max(s, w * (1 + pad)), h: Math.max(s * 0.8, h * (1 + pad)) };
+    };
+    const parts = S.mFenCible === 'traits'
+      ? Object.keys(FACE_PARTS).map(k => [k, box(FACE_PARTS[k], k === 'BOUCHE' ? 0.35 : 0.9)])
+      : [['VISAGE', box(f.map((_, i) => i), 0.18)]];
+    parts.forEach(([name, b], j) => {
+      const key = n * 10 + j, o = FSMOOTH[key];
+      const k = src.type === 'video' && o ? 0.45 : 1;
+      const sm = o ? { cx: o.cx + (b.cx - o.cx) * k, cy: o.cy + (b.cy - o.cy) * k, w: o.w + (b.w - o.w) * k, h: o.h + (b.h - o.h) * k } : b;
+      FSMOOTH[key] = sm;
+      out.push({ zone: {}, key: 7000 + key, ox: sm.cx, oy: sm.cy, zw: sm.w, zh: sm.h, label: name + (FACES.length > 1 ? ' ' + (n + 1) : '') });
+    });
+  });
+  return out;
+}
+
 function drawWindows(W, H, u, pal, t, w, aBass, anim){
   const nAuto = S.mAuto === 'oui' ? Math.round(S.mFen / 100 * 16) : 0;
-  if (!nAuto && !ZONES.length) return;
+  const faces = faceWin() && FACES.length ? faceBoxes(W, H) : [];
+  if (!nAuto && !ZONES.length && !faces.length) return;
   const Lm = Math.min(W, H), base = (0.08 + S.mFenTaille / 100 * 0.32) * Lm, zoom0 = 1 + S.mZoom / 100 * 3;
   const r = mulberry32(S.seed * 53 + 7), m = 12 * u, kx = W / AW, ky = H / AH;
 
   // 1. Origines : zones choisies d'abord, puis points forts ou au hasard
   const items = ZONES.map((z, k) => ({ zone: z, key: 9000 + k, ox: (z.x + z.w / 2) * kx, oy: (z.y + z.h / 2) * ky, zw: z.w * kx, zh: z.h * ky, label: 'ZONE-' + String(k + 1).padStart(2, '0') }));
-  if (nAuto && nP){
+  items.push(...faces);
+  if (nAuto && nP && !faces.length){
     const all = Array.from({ length: nP }, (_, i) => i);
     const order = S.mFenCible === 'hasard'
       ? all.sort((a, b) => hash2(S.seed + 31, PC[a]) - hash2(S.seed + 31, PC[b]))
@@ -1428,6 +1476,120 @@ function drawWindows(W, H, u, pal, t, w, aBass, anim){
     }
     ctx.globalAlpha = 1;
   }
+}
+
+/* ==========================================================
+   17 quinquies. FINITIONS SUBTILES
+   Halo, vignette, virage, flou de bascule, fuite de lumière,
+   frange chromatique, bandes cinéma.
+   ========================================================== */
+const [bCv, bCtx] = mk2d(), [b2Cv, b2Ctx] = mk2d(), [mkCv, mkCtx] = mk2d();
+
+// Copie floue de l'image : on réduit puis on agrandit (rapide, sans filtre)
+function blurCopy(W, H, f){
+  const w1 = Math.max(1, Math.round(W / 4)), h1 = Math.max(1, Math.round(H / 4));
+  const w2 = Math.max(1, Math.round(W / f)), h2 = Math.max(1, Math.round(H / f));
+  if (b2Cv.width !== w1 || b2Cv.height !== h1){ b2Cv.width = w1; b2Cv.height = h1; }
+  if (bCv.width !== w2 || bCv.height !== h2){ bCv.width = w2; bCv.height = h2; }
+  b2Ctx.globalCompositeOperation = 'source-over'; b2Ctx.drawImage(cv, 0, 0, w1, h1);
+  bCtx.globalCompositeOperation = 'source-over'; bCtx.drawImage(b2Cv, 0, 0, w2, h2);
+  b2Ctx.drawImage(bCv, 0, 0, w1, h1);                       // remonte en douceur
+  return b2Cv;
+}
+
+function drawFinish(W, H, u, pal, t, anim, aBass){
+  const L = Math.max(W, H);
+  // Flou de bascule (effet maquette) : net au centre, flou en haut et en bas
+  if (S.fFlou > 0){
+    const b = blurCopy(W, H, 14);
+    if (mkCv.width !== W || mkCv.height !== H){ mkCv.width = W; mkCv.height = H; }
+    mkCtx.globalCompositeOperation = 'source-over'; mkCtx.clearRect(0, 0, W, H); mkCtx.drawImage(b, 0, 0, W, H);
+    const g = mkCtx.createLinearGradient(0, 0, 0, H), k = 0.18 + (1 - S.fFlou / 100) * 0.17;
+    g.addColorStop(0, '#000'); g.addColorStop(k, 'rgba(0,0,0,0)'); g.addColorStop(1 - k, 'rgba(0,0,0,0)'); g.addColorStop(1, '#000');
+    mkCtx.globalCompositeOperation = 'destination-in'; mkCtx.fillStyle = g; mkCtx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = Math.min(1, 0.4 + S.fFlou / 100 * 0.6); ctx.drawImage(mkCv, 0, 0); ctx.globalAlpha = 1;
+  }
+  // Halo : les hautes lumières diffusent une lueur douce
+  if (S.fHalo > 0){
+    const b = blurCopy(W, H, 12);
+    b2Ctx.globalCompositeOperation = 'multiply'; b2Ctx.drawImage(b2Cv, 0, 0); b2Ctx.drawImage(b2Cv, 0, 0);   // garde surtout le clair
+    b2Ctx.globalCompositeOperation = 'source-over';
+    ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = Math.min(1, S.fHalo / 100 * 0.9 * (1 + aBass * 0.3));
+    ctx.drawImage(b2Cv, 0, 0, W, H);
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+  }
+  // Fuite de lumière : une lueur chaude qui entre par un bord
+  if (S.fFuite > 0){
+    const r = mulberry32(S.seed * 61 + 9), side = r() < 0.5;
+    const x = side ? 0 : W, y = (0.15 + r() * 0.5 + (anim ? Math.sin(t * 0.4) * 0.08 : 0)) * H, R = L * (0.55 + r() * 0.3);
+    const a = S.fFuite / 100;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, R);
+    g.addColorStop(0, 'rgba(255,110,50,' + (0.75 * a).toFixed(3) + ')');
+    g.addColorStop(0.35, 'rgba(255,170,90,' + (0.35 * a).toFixed(3) + ')');
+    g.addColorStop(1, 'rgba(255,200,140,0)');
+    ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  // Virage : teinte douce dans la couleur de la palette (sépia en monochrome)
+  if (S.fVirage > 0){
+    ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = S.fVirage / 100 * 0.75;
+    ctx.fillStyle = S.palette === 'mono' ? '#c49a6c' : pal.ligne; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+  }
+  // Frange chromatique : léger décalage rouge / bleu, plus fort vers les bords
+  if (S.fFrange > 0){
+    const off = (0.6 + S.fFrange / 100 * 5) * u;
+    if (pCv.width !== W || pCv.height !== H){ pCv.width = W; pCv.height = H; }
+    pCtx.drawImage(cv, 0, 0);
+    ['#f00', '#0f0', '#00f'].forEach((col, k) => {
+      const [c, g] = CHN[k];
+      if (c.width !== W || c.height !== H){ c.width = W; c.height = H; }
+      g.globalCompositeOperation = 'source-over'; g.drawImage(pCv, 0, 0);
+      g.globalCompositeOperation = 'multiply'; g.fillStyle = col; g.fillRect(0, 0, W, H);
+      g.globalCompositeOperation = 'source-over';
+    });
+    const sc = 1 + off * 2 / W;                                // agrandissement radial : 0 au centre, max aux bords
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.drawImage(CHN[0][0], W / 2 - W * sc / 2, H / 2 - H * sc / 2, W * sc, H * sc);
+    ctx.drawImage(CHN[1][0], 0, 0);
+    ctx.drawImage(CHN[2][0], W / 2 - W / sc / 2, H / 2 - H / sc / 2, W / sc, H / sc);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  // Vignette
+  if (S.fVignette > 0){
+    const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, L * 0.75);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,' + (S.fVignette / 100 * 0.9).toFixed(3) + ')');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+}
+
+// Bandes cinéma, en haut et en bas
+function drawBars(W, H){
+  if (S.fBandes <= 0) return;
+  const h = S.fBandes / 100 * 0.16 * H;
+  ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, h); ctx.fillRect(0, H - h, W, h);
+}
+
+// Titre et sous-titre (nom du cocktail, événement…)
+function drawTitle(W, H, u, pal){
+  const ti = (S.titre || '').trim(), st = (S.sousTitre || '').trim();
+  if (!ti && !st) return;
+  const size = (22 + S.tTaille / 100 * 100) * u, serif = S.tStyle === 'serif';
+  const yC = S.tPos === 'haut' ? H * 0.13 : S.tPos === 'centre' ? H * 0.5 : H * 0.84;
+  ctx.save();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = pal.forme;
+  ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 14 * u;
+  ctx.font = (serif ? 'italic 400 ' : '700 ') + Math.round(size) + 'px ' + (serif ? 'Georgia, "Times New Roman", serif' : MONO());
+  // Le titre rétrécit s'il est trop large
+  let fs = size; while (ctx.measureText(ti).width > W * 0.88 && fs > 10){ fs *= 0.92; ctx.font = ctx.font.replace(/\d+px/, Math.round(fs) + 'px'); }
+  if (ti) ctx.fillText(serif ? ti : ti.toUpperCase(), W / 2, yC);
+  if (st){
+    ctx.font = Math.round(Math.max(9 * u, fs * 0.26)) + 'px ' + MONO();
+    ctx.fillStyle = pal.ligne;
+    ctx.fillText(st.toUpperCase().split('').join(' '), W / 2, yC + (ti ? fs * 0.75 : 0));
+  }
+  ctx.restore();
 }
 
 /* ==========================================================
@@ -1901,6 +2063,9 @@ function render(now){
   // 12. Fenêtres mémoire
   if (S.memoire !== 'aucune') drawWindows(W, H, u, pal, t, w, aBass, anim);
 
+  // 12 bis. Finitions subtiles
+  drawFinish(W, H, u, pal, t, anim, aBass);
+
   // 13. Trame et grain (les aigus les renforcent)
   if (S.lignes > 0){ ctx.globalAlpha = Math.min(1, S.lignes / 100 * 0.45 + aHigh * 0.25); ctx.fillStyle = scanPattern(u); ctx.fillRect(0, 0, W, H); }
   if (S.grain > 0 && grainPat){
@@ -1911,8 +2076,10 @@ function render(now){
   }
   ctx.globalAlpha = 1;
 
-  // 14. Cadre
+  // 14. Bandes cinéma, cadre, titre
+  drawBars(W, H);
   if (S.cadre === 'oui') drawFrame(W, H, u, pal);
+  drawTitle(W, H, u, pal);
 
   // 15. Aperçu de la zone en cours de tracé
   drawSelection(u, pal);
@@ -2151,7 +2318,7 @@ const OUI_NON = [['oui', 'Oui'], ['non', 'Non']];
 const MEM_ON = () => S.memoire !== 'aucune';
 const MEM_CELLS = () => S.memoire === 'archive' || S.memoire === 'glyphes';
 const MEM_PIX = () => S.memoire === 'archive' || S.memoire === 'glyphes' || S.memoire === 'echo';
-const WIN_ON = () => S.memoire !== 'aucune' && (S.mFen > 0 || ZONES.length > 0);
+const WIN_ON = () => S.memoire !== 'aucune' && (S.mFen > 0 || ZONES.length > 0 || faceWin());
 const AUTO_ON = () => S.memoire !== 'aucune' && S.mAuto === 'oui';
 const SECTIONS = [
   { t: 'Style', key: 'style', items: [
@@ -2165,6 +2332,15 @@ const SECTIONS = [
   { t: 'Image source', key: 'image', items: [
     { seg: 'couleur', label: 'Couleur', cols: 3, opts: [['nb', 'Noir et blanc'], ['original', 'Original'], ['teinte', 'Teinté']] },
     { range: 'opacite', label: "Opacité de l'image source", min: 0 } ] },
+  { t: 'Finitions', key: 'finition', items: [
+    { note: 'Des effets légers pour un rendu plus photo, à doser.' },
+    { range: 'fHalo', label: 'Halo lumineux', min: 0 },
+    { range: 'fVignette', label: 'Vignette', min: 0 },
+    { range: 'fVirage', label: 'Virage de couleur', min: 0 },
+    { range: 'fFlou', label: 'Flou de bascule (maquette)', min: 0 },
+    { range: 'fFuite', label: 'Fuite de lumière', min: 0 },
+    { range: 'fFrange', label: 'Frange chromatique', min: 0 },
+    { range: 'fBandes', label: 'Bandes cinéma', min: 0 } ] },
   { t: 'Analyse', key: 'analyse', items: [
     { range: 'densite', label: 'Densité des points' },
     { range: 'seuil', label: 'Seuil des contours' } ] },
@@ -2200,7 +2376,7 @@ const SECTIONS = [
     { seg: 'dFusion', label: 'Fusion', cols: 2, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superposition']], dep: ['dither', 'aucun'] } ] },
   { t: 'Pixel memory', key: 'memoire', badge: 'memoire', items: [
     { seg: 'memoire', label: 'Programme', cols: 3, opts: [['aucune', 'Aucun'], ['fenetres', 'Fenêtres'], ['archive', 'Blocs'], ['glyphes', 'Glyphes'], ['echo', 'Écho']] },
-    { seg: 'mFenForme', label: 'Forme de la mémoire', cols: 3, icons: true, opts: [['carre', 'Carré'], ['rect', 'Rectangle'], ['rond', 'Rond'], ['hexa', 'Hexagone'], ['losange', 'Losange'], ['mixte', 'Mixte']] },
+    { seg: 'mFenForme', label: 'Forme de la mémoire', cols: 4, icons: true, opts: [['aucune', 'Aucune'], ['carre', 'Carré'], ['rect', 'Rectangle'], ['rond', 'Rond'], ['hexa', 'Hexagone'], ['losange', 'Losange'], ['mixte', 'Mixte']] },
     { html: '<div class="head"><span>Préréglages</span></div><div class="chips" id="memChips"></div>' },
     { sub: 'Zones choisies et suivi' },
     { html: '<div class="row3"><button class="btn" id="zSel" type="button">Choisir<br>une zone</button><button class="btn" id="zUndo" type="button">Retirer<br>la dernière</button><button class="btn" id="zClear" type="button">Tout<br>effacer</button></div><p class="note" id="zInfo"></p>' },
@@ -2212,7 +2388,8 @@ const SECTIONS = [
     { range: 'mFenVar', label: 'Variation de taille', min: 0, only: AUTO_ON },
     { range: 'mZoom', label: 'Zoom', min: 0, only: WIN_ON },
     { seg: 'mFenPlace', label: 'Placement', cols: 3, opts: [['proche', 'Près du point'], ['libre', 'Libre'], ['bord', 'En colonne']], only: WIN_ON },
-    { seg: 'mFenCible', label: 'Origine automatique', cols: 2, opts: [['forts', 'Points forts'], ['hasard', 'Au hasard']], only: AUTO_ON },
+    { seg: 'mFenCible', label: 'Suivre automatiquement', cols: 2, opts: [['forts', 'Points forts'], ['hasard', 'Au hasard'], ['visages', 'Visages'], ['traits', 'Yeux et bouche']], only: MEM_ON },
+    { note: 'Visages, Yeux et bouche : le zoom suit les visages, même en vidéo. Demande Internet (version GitHub).', only: () => faceWin() },
     { range: 'mFenPix', label: 'Pixelisation dans les fenêtres', min: 0, only: WIN_ON },
     { seg: 'mFenTon', label: 'Ton des fenêtres', cols: 3, opts: [['photo', 'Photo'], ['nb', 'N et B'], ['inverse', 'Inversé']], only: WIN_ON },
     { sub: 'Liens et repères', only: WIN_ON },
@@ -2265,6 +2442,12 @@ const SECTIONS = [
   { t: 'Annotations', key: 'annotations', items: [
     { seg: 'annot', label: 'Cercles et coordonnées', cols: 2, opts: OUI_NON },
     { seg: 'cadre', label: 'Cadre et légende', cols: 2, opts: OUI_NON } ] },
+  { t: 'Texte', key: 'texte', items: [
+    { text: 'titre', label: 'Titre', ph: 'Nom du cocktail' },
+    { text: 'sousTitre', label: 'Sous-titre', ph: 'Le Bar du Crystal' },
+    { seg: 'tStyle', label: 'Style', cols: 2, opts: [['serif', 'Élégant'], ['mono', 'Technique']] },
+    { seg: 'tPos', label: 'Position', cols: 3, opts: [['haut', 'Haut'], ['centre', 'Centre'], ['bas', 'Bas']] },
+    { range: 'tTaille', label: 'Taille du texte' } ] },
   { t: 'Mouvement', key: 'mouvement', badge: 'mouvement', items: [
     { seg: 'mouvement', label: 'Mouvement', cols: 2, opts: [['aucun', 'Aucun'], ['pulsation', 'Pulsation'], ['balayage', 'Balayage'], ['flux', 'Flux']] },
     { range: 'vitesse', label: 'Vitesse du mouvement', dep: ['mouvement', 'aucun'] } ] },
@@ -2294,9 +2477,11 @@ const ICONS = {
   surface: '<path d="M3 5h18M3 9h18M3 13h18M3 17h18M3 21h18"/>',
   annotations: '<circle cx="10" cy="14" r="6"/><path d="M10 5v4M10 19v3M1 14h4M15 14h4M15 4h6M17 7h4"/>',
   mouvement: '<path d="M2 12c2.5-6 5-6 7 0s4.5 6 7 0 4.5-6 6 0"/>',
+  finition: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+  texte: '<path d="M5 6h14M12 6v13M9 19h6"/>',
   son: '<path d="M4 10v4M8 6v12M12 9v6M16 3v18M20 9v6"/>'
 };
-const SHAPE_ICONS = {"carre": "<rect x=\"5\" y=\"5\" width=\"14\" height=\"14\"/>", "rect": "<rect x=\"3\" y=\"7\" width=\"18\" height=\"10\"/>", "rond": "<circle cx=\"12\" cy=\"12\" r=\"7.5\"/>", "hexa": "<path d=\"M4.5 12L8.25 5.5h7.5L19.5 12l-3.75 6.5h-7.5z\"/>", "losange": "<path d=\"M12 3.5L20.5 12 12 20.5 3.5 12z\"/>", "mixte": "<circle cx=\"8\" cy=\"8\" r=\"4\"/><rect x=\"13\" y=\"4\" width=\"7\" height=\"7\"/><path d=\"M8 13.5L12 17.5 8 21.5 4 17.5zM16.5 13l3.5 2v4l-3.5 2-3.5-2v-4z\"/>"};
+const SHAPE_ICONS = {"aucune": "<circle cx='12' cy='12' r='7.5'/><path d='M6.7 17.3L17.3 6.7'/>", "carre": "<rect x=\"5\" y=\"5\" width=\"14\" height=\"14\"/>", "rect": "<rect x=\"3\" y=\"7\" width=\"18\" height=\"10\"/>", "rond": "<circle cx=\"12\" cy=\"12\" r=\"7.5\"/>", "hexa": "<path d=\"M4.5 12L8.25 5.5h7.5L19.5 12l-3.75 6.5h-7.5z\"/>", "losange": "<path d=\"M12 3.5L20.5 12 12 20.5 3.5 12z\"/>", "mixte": "<circle cx=\"8\" cy=\"8\" r=\"4\"/><rect x=\"13\" y=\"4\" width=\"7\" height=\"7\"/><path d=\"M8 13.5L12 17.5 8 21.5 4 17.5zM16.5 13l3.5 2v4l-3.5 2-3.5-2v-4z\"/>"};
 const RANGE_MIN = {}, DEPS = [], BADGES = {};
 
 function el(tag, cls, html){ const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
@@ -2333,6 +2518,7 @@ function buildPanel(){
       if (it.html) node = el('div', null, it.html);
       else if (it.note) node = el('p', 'note', it.note);
       else if (it.sub) node = el('h3', 'sub', it.sub);
+      else if (it.text){ node = el('div', 'ctl', '<div class="head"><label for="x-' + it.text + '">' + it.label + '</label></div><input class="txt" type="text" id="x-' + it.text + '" name="' + it.text + '" maxlength="40" autocomplete="off" placeholder="' + it.ph + '">'); }
       else node = it.seg ? buildSeg(it) : buildRange(it);
       const off = it.dep ? (it.dep[0] === '@audio' ? () => !AU.el : () => S[it.dep[0]] === it.dep[1]) : null;
       if (off || it.only) DEPS.push([node, off, it.only || null]);
@@ -2428,7 +2614,7 @@ function refreshDeps(){
     node.querySelectorAll('input').forEach(i => { i.disabled = o; });
   }
   const label = { liens: S.liens, contours: S.contours > 0 ? 'oui' : 'non', personnes: S.personne, dither: S.dither, memoire: S.memoire, vitre: S.vitre, prisme: S.prisme, grille: S.grille, cercles: S.chaine, mouvement: S.mouvement };
-  const live = { liens: S.liens !== 'aucun', contours: S.contours > 0, personnes: S.personne !== 'aucun' || S.protege !== 'non', dither: S.dither !== 'aucun', memoire: S.memoire !== 'aucune', vitre: S.vitre !== 'aucune', prisme: S.prisme !== 'aucun', grille: S.grille !== 'aucune', cercles: S.chaine === 'oui', mouvement: S.mouvement !== 'aucun', son: !!AU.el };
+  const live = { finition: ['fHalo', 'fVignette', 'fVirage', 'fFlou', 'fFuite', 'fFrange', 'fBandes'].some(k => S[k] > 0), texte: !!(S.titre || S.sousTitre), liens: S.liens !== 'aucun', contours: S.contours > 0, personnes: S.personne !== 'aucun' || S.protege !== 'non', dither: S.dither !== 'aucun', memoire: S.memoire !== 'aucune', vitre: S.vitre !== 'aucune', prisme: S.prisme !== 'aucun', grille: S.grille !== 'aucune', cercles: S.chaine === 'oui', mouvement: S.mouvement !== 'aucun', son: !!AU.el };
   const rail = $('#rail');
   SECTIONS.forEach((sec, k) => { if (rail.children[k]) rail.children[k].classList.toggle('live', !!live[sec.key]); });
   const sec = SECTIONS[curSec];
@@ -2436,7 +2622,8 @@ function refreshDeps(){
 }
 function syncUI(){
   document.querySelectorAll('input[type=range]').forEach(r => { r.value = S[r.name]; paintRange(r); });
-  document.querySelectorAll('input[type=radio]').forEach(r => { r.checked = String(S[r.name]) === r.value; });
+  document.querySelectorAll('input[type=radio]').forEach(r => { r.checked = r.name === 'mFenForme' && S.memoire === 'aucune' ? r.value === 'aucune' : String(S[r.name]) === r.value; });
+  document.querySelectorAll('input.txt').forEach(i => { if (i.value !== S[i.name]) i.value = S[i.name]; });
   document.querySelectorAll('#styles .btn').forEach(b => b.classList.toggle('cur', b.dataset.style === S.style));
   applyPalette(); refreshDeps();
 }
@@ -2461,8 +2648,11 @@ function onInput(e){
   const t = e.target; if (!t.name) return;
   const k = t.name;
   if (t.type === 'range'){ S[k] = +t.value; paintRange(t); }
+  else if (t.type === 'text'){ S[k] = t.value; dirty = true; refreshDeps(); return; }
   else if (t.type === 'radio'){
     const v = k === 'duree' ? +t.value : t.value;
+    // "Aucune" forme : on éteint la mémoire mais on garde la forme précédente
+    if (k === 'mFenForme' && v === 'aucune'){ S.memoire = 'aucune'; syncUI(); onPersonChange(); dirty = true; return; }
     if (S[k] === v) return;
     S[k] = v;
   } else return;
@@ -2487,6 +2677,7 @@ function onPersonChange(){
 function applyStyle(k){
   Object.assign(S, LAYERS_OFF, STYLES[k].v); S.style = k;
   syncUI();
+  if (personActive()) onPersonChange();
   needPts = needCont = needGrid = true; dirty = true;
 }
 function randomize(){
