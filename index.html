@@ -15,7 +15,7 @@
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + var(--stageH,0px) + 8px);background:var(--bg)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--txt);font:13px/1.45 var(--mono);-webkit-text-size-adjust:100%}
 button,input{font:inherit;color:inherit}
@@ -134,7 +134,16 @@ input[type=range]:disabled{cursor:not-allowed}
 body.dragging .drop{display:grid}
 
 /* ===== Ordinateur : réglages à côté ===== */
+.opt span.ico{flex-direction:column;gap:3px;min-height:60px;font-size:10px}
+.opt span.ico .shp{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linejoin:round}
+@media (max-width:899px){
+  .tele{display:none}
+  .frame{height:32vh;height:32dvh}
+  .actions .btn{min-height:42px}
+  .rail-wrap{margin-top:4px}
+}
 @media (min-width:900px){
+  html{scroll-padding-top:env(safe-area-inset-top,0px)}
   .main{display:grid;grid-template-columns:minmax(0,1fr) 400px;align-items:start}
   .stage{height:calc(100vh - 58px);height:calc(100dvh - 58px);display:flex;flex-direction:column;border-bottom:0;border-right:1px solid var(--rule);padding:14px}
   .frame{flex:1;height:auto;min-height:0}
@@ -1201,15 +1210,27 @@ function updateMemory(W, H, u, pal, anim){
     }
     return;
   }
+  // Forme des blocs : la même que celle des fenêtres (carré, rond, hexagone, losange, mixte)
+  const cellPath = (p, sh, x, y, w, h) => {
+    if (sh === 'rond'){ p.moveTo(x + w, y + h / 2); p.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, 6.2832); }
+    else if (sh === 'carre' || sh === 'rect') p.rect(x, y, w, h);
+    else { winPts({ x, y, w, h }, sh).forEach(([px, py], k) => k ? p.lineTo(px, py) : p.moveTo(px, py)); p.closePath(); }
+  };
   for (const c of cells){
     const [x, y, w, h] = c, col = colorOf(c);
-    if (R === 'contour'){ mCtx.strokeStyle = col; mCtx.strokeRect(x + lw / 2, y + lw / 2, Math.max(1, w - lw), Math.max(1, h - lw)); }
-    else if (R === 'point'){ mCtx.fillStyle = col; mCtx.beginPath(); mCtx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, 6.2832); mCtx.fill(); }
-    else if (R === 'barre'){ mCtx.fillStyle = col; mCtx.fillRect(x, y + h * 0.35, w, Math.max(1, h * 0.3)); }
-    else { mCtx.fillStyle = col; mCtx.fillRect(x, y, w, h); sep.rect(x, y, w, h); }
+    const sh = R === 'point' ? 'rond' : S.mFenForme === 'mixte' ? WIN_SHAPES[(c[9] * 5) | 0] : S.mFenForme;
+    if (R === 'barre'){ mCtx.fillStyle = col; mCtx.fillRect(x, y + h * 0.35, w, Math.max(1, h * 0.3)); }
+    else if (sh === 'carre' || sh === 'rect'){
+      if (R === 'contour'){ mCtx.strokeStyle = col; mCtx.strokeRect(x + lw / 2, y + lw / 2, Math.max(1, w - lw), Math.max(1, h - lw)); }
+      else { mCtx.fillStyle = col; mCtx.fillRect(x, y, w, h); sep.rect(x, y, w, h); }
+    } else {
+      const p = new Path2D(); cellPath(p, sh, x, y, w, h);
+      if (R === 'contour'){ mCtx.strokeStyle = col; mCtx.stroke(p); }
+      else { mCtx.fillStyle = col; mCtx.fill(p); cellPath(sep, sh, x, y, w, h); }
+    }
     if (c[8] && c[9] < accent) acc.rect(x + 1.5 * u, y + 1.5 * u, Math.max(1, w - 3 * u), Math.max(1, h - 3 * u));
   }
-  if (R === 'bloc' && S.mSep > 0){ mCtx.strokeStyle = pal.fond; mCtx.globalAlpha = S.mSep / 100; mCtx.stroke(sep); }
+  if ((R === 'bloc' || R === 'point') && S.mSep > 0){ mCtx.strokeStyle = pal.fond; mCtx.globalAlpha = S.mSep / 100; mCtx.stroke(sep); }
   mCtx.fillStyle = pal.ligne; mCtx.globalAlpha = 0.4; mCtx.fill(acc);
   mCtx.globalAlpha = 0.95; mCtx.strokeStyle = pal.ligne; mCtx.lineWidth = Math.max(1.5, 2 * u); mCtx.stroke(acc); mCtx.globalAlpha = 1;
 }
@@ -2178,18 +2199,18 @@ const SECTIONS = [
     { range: 'dOpa', label: 'Opacité du dither', dep: ['dither', 'aucun'] },
     { seg: 'dFusion', label: 'Fusion', cols: 2, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superposition']], dep: ['dither', 'aucun'] } ] },
   { t: 'Pixel memory', key: 'memoire', badge: 'memoire', items: [
+    { seg: 'memoire', label: 'Programme', cols: 3, opts: [['aucune', 'Aucun'], ['fenetres', 'Fenêtres'], ['archive', 'Blocs'], ['glyphes', 'Glyphes'], ['echo', 'Écho']] },
+    { seg: 'mFenForme', label: 'Forme de la mémoire', cols: 3, icons: true, opts: [['carre', 'Carré'], ['rect', 'Rectangle'], ['rond', 'Rond'], ['hexa', 'Hexagone'], ['losange', 'Losange'], ['mixte', 'Mixte']] },
     { html: '<div class="head"><span>Préréglages</span></div><div class="chips" id="memChips"></div>' },
     { sub: 'Zones choisies et suivi' },
     { html: '<div class="row3"><button class="btn" id="zSel" type="button">Choisir<br>une zone</button><button class="btn" id="zUndo" type="button">Retirer<br>la dernière</button><button class="btn" id="zClear" type="button">Tout<br>effacer</button></div><p class="note" id="zInfo"></p>' },
     { seg: 'mSuivi', label: 'Suivre les zones en vidéo', cols: 2, opts: OUI_NON },
     { seg: 'mAuto', label: 'Fenêtres automatiques en plus', cols: 2, opts: OUI_NON, only: MEM_ON },
-    { seg: 'memoire', label: 'Programme', cols: 3, opts: [['aucune', 'Aucun'], ['fenetres', 'Fenêtres'], ['archive', 'Blocs'], ['glyphes', 'Glyphes'], ['echo', 'Écho']] },
     { sub: 'Fenêtres de zoom', only: MEM_ON },
     { range: 'mFen', label: 'Nombre de fenêtres automatiques', min: 0, only: AUTO_ON },
     { range: 'mFenTaille', label: 'Taille des fenêtres automatiques', only: AUTO_ON },
     { range: 'mFenVar', label: 'Variation de taille', min: 0, only: AUTO_ON },
     { range: 'mZoom', label: 'Zoom', min: 0, only: WIN_ON },
-    { seg: 'mFenForme', label: 'Forme des fenêtres', cols: 3, opts: [['carre', 'Carré'], ['rect', 'Rectangle'], ['rond', 'Rond'], ['hexa', 'Hexagone'], ['losange', 'Losange'], ['mixte', 'Mixte']], only: WIN_ON },
     { seg: 'mFenPlace', label: 'Placement', cols: 3, opts: [['proche', 'Près du point'], ['libre', 'Libre'], ['bord', 'En colonne']], only: WIN_ON },
     { seg: 'mFenCible', label: 'Origine automatique', cols: 2, opts: [['forts', 'Points forts'], ['hasard', 'Au hasard']], only: AUTO_ON },
     { range: 'mFenPix', label: 'Pixelisation dans les fenêtres', min: 0, only: WIN_ON },
@@ -2201,7 +2222,7 @@ const SECTIONS = [
     { seg: 'mFenCadre', label: 'Cadre', cols: 2, opts: OUI_NON, only: WIN_ON },
     { seg: 'mFenLabel', label: 'Étiquettes et coordonnées', cols: 2, opts: OUI_NON, only: WIN_ON },
     { sub: 'Blocs', only: MEM_CELLS },
-    { seg: 'mRendu', label: 'Rendu', cols: 4, opts: [['bloc', 'Bloc'], ['contour', 'Contour'], ['point', 'Point'], ['barre', 'Barre']], only: () => S.memoire === 'archive' },
+    { seg: 'mRendu', label: 'Remplissage des blocs', cols: 3, opts: [['bloc', 'Plein'], ['contour', 'Contour'], ['barre', 'Barre']], only: () => S.memoire === 'archive' },
     { range: 'mCell', label: 'Taille des blocs', only: MEM_PIX },
     { range: 'mRatio', label: 'Proportion (50 = carré)', min: 0, only: MEM_PIX },
     { range: 'mEcart', label: 'Espacement', min: 0, only: MEM_CELLS },
@@ -2275,6 +2296,7 @@ const ICONS = {
   mouvement: '<path d="M2 12c2.5-6 5-6 7 0s4.5 6 7 0 4.5-6 6 0"/>',
   son: '<path d="M4 10v4M8 6v12M12 9v6M16 3v18M20 9v6"/>'
 };
+const SHAPE_ICONS = {"carre": "<rect x=\"5\" y=\"5\" width=\"14\" height=\"14\"/>", "rect": "<rect x=\"3\" y=\"7\" width=\"18\" height=\"10\"/>", "rond": "<circle cx=\"12\" cy=\"12\" r=\"7.5\"/>", "hexa": "<path d=\"M4.5 12L8.25 5.5h7.5L19.5 12l-3.75 6.5h-7.5z\"/>", "losange": "<path d=\"M12 3.5L20.5 12 12 20.5 3.5 12z\"/>", "mixte": "<circle cx=\"8\" cy=\"8\" r=\"4\"/><rect x=\"13\" y=\"4\" width=\"7\" height=\"7\"/><path d=\"M8 13.5L12 17.5 8 21.5 4 17.5zM16.5 13l3.5 2v4l-3.5 2-3.5-2v-4z\"/>"};
 const RANGE_MIN = {}, DEPS = [], BADGES = {};
 
 function el(tag, cls, html){ const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
@@ -2286,8 +2308,9 @@ function buildSeg(it){
   seg.style.gridTemplateColumns = 'repeat(' + it.cols + ',1fr)';
   for (const [v, txt] of it.opts){
     const lab = el('label', 'opt');
-    const sw = it.swatch ? '<i class="sw" style="background:' + PALETTES[v].fond + ';border-color:' + PALETTES[v].ligne + '"></i>' : '';
-    lab.innerHTML = '<input type="radio" name="' + it.seg + '" value="' + v + '"><span>' + sw + txt + '</span>';
+    const ic = it.icons ? '<svg class="shp" viewBox="0 0 24 24" aria-hidden="true">' + SHAPE_ICONS[v] + '</svg>' : '';
+    const sw = it.swatch ? '<i class="sw" style="background:' + PALETTES[v].fond + ';border-color:' + PALETTES[v].ligne + '"></i>' : ic;
+    lab.innerHTML = '<input type="radio" name="' + it.seg + '" value="' + v + '"><span' + (it.icons ? ' class="ico"' : '') + '>' + sw + txt + '</span>';
     seg.appendChild(lab);
   }
   box.appendChild(seg);
@@ -2358,6 +2381,11 @@ function goTo(n, scroll){
   });
   $('#paneTitle').textContent = SECTIONS[n].t;
   refreshDeps();
+  // Sur téléphone : le nouveau réglage commence juste sous l'image
+  if (scroll !== null && !matchMedia('(min-width:900px)').matches){
+    const top = $('.panel').getBoundingClientRect().top + scrollY - $('.stage').offsetHeight;
+    if (scrollY > top) scrollTo({ top, behavior: 'smooth' });
+  }
 }
 function railCenter(){
   const rail = $('#rail'), mid = rail.scrollLeft + rail.clientWidth / 2;
@@ -2374,6 +2402,9 @@ function railCenter(){
 }
 function bindRail(){
   const rail = $('#rail');
+  // Hauteur de la zone fixe, pour que rien ne passe dessous
+  const setH = () => document.documentElement.style.setProperty('--stageH', (matchMedia('(min-width:900px)').matches ? 0 : $('.stage').offsetHeight) + 'px');
+  setH(); if ('ResizeObserver' in window) new ResizeObserver(setH).observe($('.stage'));
   rail.addEventListener('scroll', () => {
     if (!railRaf) railRaf = requestAnimationFrame(() => { railRaf = 0; railCenter(); });
     clearTimeout(railTimer);
@@ -2438,7 +2469,8 @@ function onInput(e){
   if (POINT_KEYS.includes(k)) needPts = true;
   if (CONTOUR_KEYS.includes(k)) needCont = true;
   if (GRID_KEYS.includes(k)) needGrid = true;
-  if (k === 'memoire' && S.memoire === 'fenetres' && S.mFen === 0 && !ZONES.length){ S.mFen = 30; S.mAuto = 'oui'; syncUI(); }
+  if (k === 'mFenForme' && S.memoire === 'aucune'){ S.memoire = 'fenetres'; syncUI(); }
+  if ((k === 'memoire' || k === 'mFenForme') && S.memoire === 'fenetres' && S.mFen === 0 && !ZONES.length){ S.mFen = 30; S.mAuto = 'oui'; syncUI(); }
   if (k === 'format') prepareSource();
   if (k === 'palette') applyPalette();
   if (PERSON_KEYS.includes(k)) onPersonChange();
