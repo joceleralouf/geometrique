@@ -230,7 +230,7 @@ const S = {
   mCible: 'clairs', mSeuil: 50, mCouv: 45, mPrio: 30,
   mCouleur: 'photo', mNiveaux: 100, mContraste: 50, mAccent: 35, mSep: 45,
   mDecal: 0, mRefresh: 40, mEchoLong: 60, mEchoDir: 'horizontal',
-  mFen: 30, mFenTaille: 40, mFenVar: 40, mZoom: 35, mFenForme: 'mixte', mFenPlace: 'proche', mFenCible: 'forts', mFenPix: 0, mFenTon: 'photo', mLien: 'coude', mLienEp: 25, mFenRepere: 'oui', mFenLabel: 'oui', mFenCadre: 'oui', mOpa: 100, mFusion: 'normal',
+  mFen: 30, mFenTaille: 40, mFenVar: 40, mZoom: 35, mFenForme: 'mixte', mFenPlace: 'proche', mFenCible: 'forts', mFenPix: 0, mFenTon: 'photo', mLien: 'coude', mLienEp: 35, mFenRepere: 'oui', mFenLabel: 'oui', mFenCadre: 'oui', mAuto: 'oui', mSuivi: 'oui', mOpa: 100, mFusion: 'normal',
   // Vitre
   vitre: 'aucune', vEclats: 45, vDecal: 40, vFissures: 70, vReflets: 40,
   // Prisme
@@ -255,12 +255,12 @@ const PALETTES = {
 // Préréglages Pixel memory (complets : chaque réglage est défini)
 const MEM_BASE = { memoire: 'fenetres', mRendu: 'bloc', mCell: 30, mRatio: 50, mEcart: 0, mEntropie: 0, mCible: 'clairs', mSeuil: 50, mCouv: 45, mPrio: 30,
   mCouleur: 'photo', mNiveaux: 100, mContraste: 50, mAccent: 35, mSep: 45, mDecal: 0, mRefresh: 40, mEchoLong: 60, mEchoDir: 'horizontal',
-  mFen: 30, mFenTaille: 40, mFenVar: 40, mZoom: 35, mFenForme: 'mixte', mFenPlace: 'proche', mFenCible: 'forts', mFenPix: 0, mFenTon: 'photo', mLien: 'coude', mLienEp: 25, mFenRepere: 'oui', mFenLabel: 'oui', mFenCadre: 'oui', mOpa: 100, mFusion: 'normal' };
+  mFen: 30, mFenTaille: 40, mFenVar: 40, mZoom: 35, mFenForme: 'mixte', mFenPlace: 'proche', mFenCible: 'forts', mFenPix: 0, mFenTon: 'photo', mLien: 'coude', mLienEp: 35, mFenRepere: 'oui', mFenLabel: 'oui', mFenCadre: 'oui', mAuto: 'oui', mSuivi: 'oui', mOpa: 100, mFusion: 'normal' };
 const MEM_PRESETS = {
   zoom:      { nom: 'Zoom',      v: { mFen: 38, mFenTaille: 45, mFenVar: 40, mZoom: 35 } },
   planche:   { nom: 'Planche',   v: { mFen: 63, mFenTaille: 35, mFenVar: 0, mZoom: 50, mFenForme: 'carre', mFenPlace: 'bord', mLien: 'droit', mLienEp: 15 } },
   pixel:     { nom: 'Pixel',     v: { mFen: 44, mFenTaille: 55, mFenVar: 50, mZoom: 25, mFenPix: 55, mFenTon: 'nb', mFenPlace: 'libre' } },
-  blocs:     { nom: 'Blocs',     v: { memoire: 'archive', mCell: 55, mCouv: 35, mSep: 60, mAccent: 50, mFen: 32, mZoom: 40 } },
+  blocs:     { nom: 'Blocs',     v: { memoire: 'archive', mCell: 55, mCible: 'tout', mCouv: 30, mSep: 60, mAccent: 50, mFen: 32, mZoom: 40 } },
   corrompue: { nom: 'Corrompue', v: { memoire: 'archive', mCell: 40, mRatio: 70, mCible: 'tout', mCouv: 55, mDecal: 60, mEntropie: 25, mEcart: 8, mNiveaux: 20, mRefresh: 70, mSep: 30, mFen: 25 } },
   echo:      { nom: 'Écho',      v: { memoire: 'echo', mCell: 25, mCouv: 50, mEchoLong: 70, mFen: 19 } }
 };
@@ -421,6 +421,7 @@ function prepareSource(){
   fitCanvas();
 
   G.cols = -1; HERO = []; resetPerson();
+  ZONES = []; setSelecting(false); if ($('#zInfo')) updateZoneUI();
   if (!isV){
     srcCv.width = cv.width; srcCv.height = cv.height;
     srcCtx.drawImage(src.el, crop.x, crop.y, crop.w, crop.h, 0, 0, srcCv.width, srcCv.height);
@@ -1139,7 +1140,7 @@ function updateMemory(W, H, u, pal, anim){
   const cols = Math.ceil(W / g.cw), rows = Math.ceil(H / g.ch);
   tCv.width = cols; tCv.height = rows; drawSource(tCtx, cols, rows);
   const d = tCtx.getImageData(0, 0, cols, rows).data;
-  const cutL = S.mSeuil / 100 * 255, thrE = threshold() * 2, couv = S.mCouv / 100, prio = S.mPrio / 100;
+  const cutL = S.mSeuil / 100 * 255, thrE = threshold() * 1.2, couv = S.mCouv / 100, prio = S.mPrio / 100;
   const ent = S.mEntropie / 100, gap = S.mEcart / 100 * 0.5, shift = S.mDecal / 100, seed = S.seed + slot * 131;
   const edgeAt = (x, y) => {
     if (!MAG) return 0;
@@ -1209,7 +1210,8 @@ function updateMemory(W, H, u, pal, anim){
     if (c[8] && c[9] < accent) acc.rect(x + 1.5 * u, y + 1.5 * u, Math.max(1, w - 3 * u), Math.max(1, h - 3 * u));
   }
   if (R === 'bloc' && S.mSep > 0){ mCtx.strokeStyle = pal.fond; mCtx.globalAlpha = S.mSep / 100; mCtx.stroke(sep); }
-  mCtx.globalAlpha = 0.95; mCtx.strokeStyle = pal.ligne; mCtx.stroke(acc); mCtx.globalAlpha = 1;
+  mCtx.fillStyle = pal.ligne; mCtx.globalAlpha = 0.4; mCtx.fill(acc);
+  mCtx.globalAlpha = 0.95; mCtx.strokeStyle = pal.ligne; mCtx.lineWidth = Math.max(1.5, 2 * u); mCtx.stroke(acc); mCtx.globalAlpha = 1;
 }
 
 // Écho : traînées de pixels étirées depuis une colonne (ou une ligne)
@@ -1227,44 +1229,86 @@ function drawEcho(W, H, u, anim){
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
 }
 
-// Fenêtres mémoire : grands carrés qui montrent un morceau zoomé de la photo,
-// reliés par un trait à l'endroit d'où ils viennent
-function drawWindows(W, H, u, pal, t, w, aBass, anim){
-  const n = Math.round(S.mFen / 100 * 16); if (!n || !nP) return;
-  const Lm = Math.min(W, H), base = (0.08 + S.mFenTaille / 100 * 0.32) * Lm, zoom0 = 1 + S.mZoom / 100 * 3;
-  const r = mulberry32(S.seed * 53 + 7), m = 12 * u;
+// Fenêtres mémoire : grands cadres qui montrent un morceau zoomé de la photo,
+// reliés par un trait à l'endroit d'où ils viennent.
+// Deux sources : les zones choisies à la main (suivies en vidéo) et les points forts automatiques.
+const WIN_SHAPES = ['carre', 'rect', 'rond', 'hexa', 'losange'];
 
-  // 1. Points d'origine : les plus forts, ou au hasard, bien espacés
-  const all = Array.from({ length: nP }, (_, i) => i);
-  const order = S.mFenCible === 'hasard'
-    ? all.sort((a, b) => hash2(S.seed + 31, PC[a]) - hash2(S.seed + 31, PC[b]))
-    : heroIdx.concat(all.sort((a, b) => PS[b] - PS[a]));
-  const origins = [];
-  for (const i of order){
-    if (origins.length >= n) break;
-    if (i < 0 || i >= nP || origins.includes(i)) continue;
-    if (origins.some(j => Math.hypot(QX[j] - QX[i], QY[j] - QY[i]) < base * (S.mFenPlace === 'bord' ? 0.5 : 1.1))) continue;
-    origins.push(i);
+// Contour d'une fenêtre selon sa forme (liste de points)
+function winPts(b, shape){
+  const cx = b.x + b.w / 2, cy = b.y + b.h / 2, rx = b.w / 2, ry = b.h / 2, P = [];
+  if (shape === 'rond') for (let k = 0; k < 56; k++){ const a = k / 56 * 6.2832; P.push([cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]); }
+  else if (shape === 'hexa') for (let k = 0; k < 6; k++){ const a = k * Math.PI / 3; P.push([cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]); }
+  else if (shape === 'losange') P.push([cx, b.y], [b.x + b.w, cy], [cx, b.y + b.h], [b.x, cy]);
+  else P.push([b.x, b.y], [b.x + b.w, b.y], [b.x + b.w, b.y + b.h], [b.x, b.y + b.h]);
+  return P;
+}
+function ptsPath(P, scale, cx, cy){
+  const p = new Path2D();
+  P.forEach(([x, y], k) => { const X = cx + (x - cx) * scale, Y = cy + (y - cy) * scale; k ? p.lineTo(X, Y) : p.moveTo(X, Y); });
+  p.closePath(); return p;
+}
+// Point où le rayon centre → cible traverse le contour
+function edgeHit(P, cx, cy, tx, ty){
+  const dx = tx - cx, dy = ty - cy; let bt = Infinity;
+  for (let i = 0; i < P.length; i++){
+    const [px, py] = P[i], [qx, qy] = P[(i + 1) % P.length], ex = qx - px, ey = qy - py;
+    const den = dx * ey - dy * ex; if (Math.abs(den) < 1e-9) continue;
+    const t = ((px - cx) * ey - (py - cy) * ex) / den, s = ((px - cx) * dy - (py - cy) * dx) / den;
+    if (t > 0 && s >= 0 && s <= 1 && t < bt) bt = t;
+  }
+  return bt < Infinity ? [cx + dx * bt, cy + dy * bt] : [tx, ty];
+}
+
+function drawWindows(W, H, u, pal, t, w, aBass, anim){
+  const nAuto = S.mAuto === 'oui' ? Math.round(S.mFen / 100 * 16) : 0;
+  if (!nAuto && !ZONES.length) return;
+  const Lm = Math.min(W, H), base = (0.08 + S.mFenTaille / 100 * 0.32) * Lm, zoom0 = 1 + S.mZoom / 100 * 3;
+  const r = mulberry32(S.seed * 53 + 7), m = 12 * u, kx = W / AW, ky = H / AH;
+
+  // 1. Origines : zones choisies d'abord, puis points forts ou au hasard
+  const items = ZONES.map((z, k) => ({ zone: z, key: 9000 + k, ox: (z.x + z.w / 2) * kx, oy: (z.y + z.h / 2) * ky, zw: z.w * kx, zh: z.h * ky, label: 'ZONE-' + String(k + 1).padStart(2, '0') }));
+  if (nAuto && nP){
+    const all = Array.from({ length: nP }, (_, i) => i);
+    const order = S.mFenCible === 'hasard'
+      ? all.sort((a, b) => hash2(S.seed + 31, PC[a]) - hash2(S.seed + 31, PC[b]))
+      : heroIdx.concat(all.sort((a, b) => PS[b] - PS[a]));
+    const used = [];
+    for (const i of order){
+      if (used.length >= nAuto) break;
+      if (i < 0 || i >= nP || used.includes(i)) continue;
+      if (items.some(o => Math.hypot(o.ox - QX[i], o.oy - QY[i]) < base * (S.mFenPlace === 'bord' ? 0.5 : 1.1))) continue;
+      used.push(i);
+      items.push({ key: PC[i], ox: QX[i], oy: QY[i], label: 'MEM-' + String(used.length).padStart(2, '0') });
+    }
   }
 
-  // 2. Placement des fenêtres en évitant qu'elles se chevauchent
+  // 2. Placement en évitant les chevauchements
   const placed = [];
   const over = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-  const col = S.mFenPlace === 'bord';
-  const colW = base * 0.72, gapC = 8 * u;
-  const colRight = col && origins.reduce((s, i) => s + QX[i], 0) / Math.max(1, origins.length) < W / 2;
+  const col = S.mFenPlace === 'bord', colW = base * 0.72, gapC = 8 * u;
+  const colRight = col && items.reduce((s, o) => s + o.ox, 0) / Math.max(1, items.length) < W / 2;
   let colI = 0, colY = m + 18 * u;
-  origins.forEach((i, k) => {
-    const h1 = hash2(S.seed + 11, PC[i]), h2 = hash2(S.seed + 12, PC[i]), h3 = hash2(S.seed + 13, PC[i]);
-    const shape = S.mFenForme === 'mixte' ? (h3 < 0.5 ? 'carre' : 'rect') : S.mFenForme;
-    let ww = col ? colW : base * (1 - S.mFenVar / 100 * 0.65 * h1);
-    let hh = shape === 'carre' ? ww : ww * (0.55 + h2 * 0.25);
-    const ox = QX[i], oy = QY[i];
+  items.forEach((it, k) => {
+    const h1 = hash2(S.seed + 11, it.key), h2 = hash2(S.seed + 12, it.key), h3 = hash2(S.seed + 13, it.key);
+    const shape = S.mFenForme === 'mixte' ? WIN_SHAPES[(h3 * 5) | 0] : S.mFenForme;
+    let ww, hh, z;
+    if (it.zone){
+      // Zone choisie : la fenêtre garde ses proportions et agrandit la zone
+      const big = Math.max(it.zw, it.zh);
+      ww = clamp(big * zoom0, Lm * 0.14, Lm * (col ? 0.3 : 0.55));
+      if (shape === 'rect'){ hh = ww * it.zh / Math.max(1, it.zw); if (hh > Lm * 0.55){ hh = Lm * 0.55; ww = hh * it.zw / it.zh; } z = ww / Math.max(1, it.zw); }
+      else { hh = shape === 'hexa' ? ww * 0.87 : ww; z = ww / Math.max(1, big); }
+    } else {
+      ww = col ? colW : base * (1 - S.mFenVar / 100 * 0.65 * h1);
+      hh = shape === 'rect' ? ww * (0.55 + h2 * 0.25) : shape === 'hexa' ? ww * 0.87 : ww;
+      z = zoom0;
+    }
+    const own = it.zone ? { x: it.ox - it.zw / 2, y: it.oy - it.zh / 2, w: it.zw, h: it.zh } : { x: it.ox - 4, y: it.oy - 4, w: 8, h: 8 };
     let best;
     if (col){
       if (colY + hh > H - m - 18 * u){ colI++; colY = m + 18 * u; }
-      const x = colRight ? W - m - ww - colI * (ww + gapC) : m + colI * (ww + gapC);
-      best = { x, y: colY, w: ww, h: hh }; colY += hh + gapC;
+      best = { x: colRight ? W - m - ww - colI * (ww + gapC) : m + colI * (ww + gapC), y: colY, w: ww, h: hh }; colY += hh + gapC;
     } else {
       let bs = Infinity;
       const tries = S.mFenPlace === 'libre' ? 24 : 12;
@@ -1272,58 +1316,59 @@ function drawWindows(W, H, u, pal, t, w, aBass, anim){
         let x, y;
         if (S.mFenPlace === 'libre'){ x = r() * (W - ww); y = r() * (H - hh); }
         else {
-          const ang = h2 * 6.2832 + a * Math.PI / 6, dist = (ww + hh) / 2 * (0.85 + 0.5 * h3);
-          x = ox + Math.cos(ang) * dist - ww / 2; y = oy + Math.sin(ang) * dist - hh / 2;
+          const ang = h2 * 6.2832 + a * Math.PI / 6, dist = (ww + hh) / 2 * (0.85 + 0.5 * h3) + (it.zone ? Math.max(it.zw, it.zh) / 2 : 0);
+          x = it.ox + Math.cos(ang) * dist - ww / 2; y = it.oy + Math.sin(ang) * dist - hh / 2;
         }
         const c = { x: clamp(x, m, W - ww - m), y: clamp(y, m, H - hh - m), w: ww, h: hh };
-        let sc = 0;
+        let sc = over(c, own) * 2;
         for (const p of placed) sc += over(c, p) + over(c, p.src) * 0.5;
-        sc += Math.hypot(c.x + ww / 2 - ox, c.y + hh / 2 - oy) * (S.mFenPlace === 'libre' ? 0.5 : 2);
+        sc += Math.hypot(c.x + ww / 2 - it.ox, c.y + hh / 2 - it.oy) * (S.mFenPlace === 'libre' ? 0.5 : 2);
         if (sc < bs){ bs = sc; best = c; }
       }
     }
-    // Zoom (respire avec le mouvement et les basses)
-    let z = zoom0;
     if (anim) z *= 1 + 0.06 * Math.sin(t * w + k * 1.7) + aBass * 0.35;
     const sw = Math.min(W, best.w / z), sh = Math.min(H, best.h / z);
-    best.src = { x: clamp(ox - sw / 2, 0, W - sw), y: clamp(oy - sh / 2, 0, H - sh), w: sw, h: sh };
-    best.ox = ox; best.oy = oy; best.z = z;
+    best.src = { x: clamp(it.ox - sw / 2, 0, W - sw), y: clamp(it.oy - sh / 2, 0, H - sh), w: sw, h: sh };
+    Object.assign(best, { ox: it.ox, oy: it.oy, z, shape, label: it.label, zone: !!it.zone });
+    best.P = winPts(best, shape); best.sP = winPts(best.src, shape);
     placed.push(best);
   });
 
-  const lw = Math.max(0.8, (0.5 + S.mLienEp / 100 * 3) * u);
+  const lw = Math.max(0.8, (0.5 + S.mLienEp / 100 * 4) * u);
   ctx.font = Math.round(9 * u) + 'px ' + MONO();
 
-  // 3. Liens (sous les fenêtres)
+  // 3. Liens (sous les fenêtres), du bord du repère au bord de la fenêtre
   if (S.mLien !== 'aucun'){
     const p = new Path2D(), dots = new Path2D(), ds = 2.5 * u;
     for (const b of placed){
-      const s = b.src, sx = s.x + s.w / 2, sy = s.y + s.h / 2, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+      const s = b.src, scx = s.x + s.w / 2, scy = s.y + s.h / 2, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
       if (over(b, s) > 0.6 * s.w * s.h) continue;
-      // Départ au bord du repère d'origine, arrivée au bord de la fenêtre
-      const ax = clamp(cx, s.x, s.x + s.w), ay = clamp(cy, s.y, s.y + s.h);
+      const [ax, ay] = edgeHit(b.sP, scx, scy, cx, cy);
       let ex, ey;
-      if (S.mLien === 'coude'){
-        if (ay >= b.y && ay <= b.y + b.h){ ex = ax < b.x ? b.x : b.x + b.w; ey = ay; p.moveTo(ax, ay); p.lineTo(ex, ey); }
-        else { ex = clamp(ax, b.x, b.x + b.w); ey = ay < b.y ? b.y : b.y + b.h; p.moveTo(ax, ay); p.lineTo(ex, ay); p.lineTo(ex, ey); }
-      } else { ex = clamp(ax, b.x, b.x + b.w); ey = clamp(ay, b.y, b.y + b.h); p.moveTo(ax, ay); p.lineTo(ex, ey); }
+      if (S.mLien === 'coude' && !(ay > b.y && ay < b.y + b.h)){
+        [ex, ey] = edgeHit(b.P, cx, cy, cx, ay);
+        p.moveTo(ax, ay); p.lineTo(cx, ay); p.lineTo(ex, ey);
+      } else if (S.mLien === 'coude'){
+        [ex, ey] = edgeHit(b.P, cx, cy, ax, cy);
+        p.moveTo(ax, ay); p.lineTo(ax, cy); p.lineTo(ex, ey);
+      } else { [ex, ey] = edgeHit(b.P, cx, cy, ax, ay); p.moveTo(ax, ay); p.lineTo(ex, ey); }
       dots.rect(ax - ds, ay - ds, ds * 2, ds * 2); dots.rect(ex - ds, ey - ds, ds * 2, ds * 2);
     }
-    ctx.globalAlpha = 0.85; ctx.lineWidth = lw; ctx.strokeStyle = pal.forme; ctx.stroke(p);
+    ctx.globalAlpha = 0.9; ctx.lineWidth = lw; ctx.strokeStyle = pal.forme; ctx.stroke(p);
     ctx.fillStyle = pal.ligne; ctx.fill(dots); ctx.globalAlpha = 1;
   }
 
-  // 4. Repères d'origine (pointillés)
+  // 4. Repères d'origine (pointillés, même forme que la fenêtre)
   if (S.mFenRepere === 'oui'){
-    ctx.setLineDash([3 * u, 3 * u]); ctx.lineWidth = Math.max(0.8, u); ctx.strokeStyle = pal.ligne; ctx.globalAlpha = 0.9;
-    for (const b of placed) ctx.strokeRect(b.src.x, b.src.y, b.src.w, b.src.h);
+    ctx.setLineDash([3 * u, 3 * u]); ctx.lineWidth = Math.max(0.8, 1.1 * u); ctx.strokeStyle = pal.ligne; ctx.globalAlpha = 0.95;
+    for (const b of placed) ctx.stroke(ptsPath(b.sP, 1, 0, 0));
     ctx.setLineDash([]); ctx.globalAlpha = 1;
   }
 
-  // 5. Fenêtres : contenu zoomé, pixelisé ou non, ton, cadre, étiquettes
-  placed.forEach((b, k) => {
-    const s = b.src, pix = S.mFenPix / 100;
-    ctx.globalAlpha = 1;
+  // 5. Fenêtres : contenu zoomé (pixelisé ou non), ton, cadre
+  for (const b of placed){
+    const s = b.src, pix = S.mFenPix / 100, cx = b.x + b.w / 2, cy = b.y + b.h / 2, path = ptsPath(b.P, 1, 0, 0);
+    ctx.save(); ctx.clip(path); ctx.globalAlpha = 1;
     if (pix > 0.02){
       const px = Math.max(2, pix * Math.min(b.w, b.h) / 8);
       const tw = Math.max(1, Math.round(b.w / px)), th = Math.max(1, Math.round(b.h / px));
@@ -1332,32 +1377,133 @@ function drawWindows(W, H, u, pal, t, w, aBass, anim){
       ctx.imageSmoothingEnabled = false; ctx.drawImage(fCv, 0, 0, tw, th, b.x, b.y, b.w, b.h); ctx.imageSmoothingEnabled = true;
     } else drawSourceRect(ctx, s.x, s.y, s.w, s.h, b.x, b.y, b.w, b.h);
     if (S.mFenTon !== 'photo'){
-      ctx.save(); ctx.beginPath(); ctx.rect(b.x, b.y, b.w, b.h); ctx.clip();
-      if (S.mFenTon === 'nb'){ ctx.globalCompositeOperation = 'saturation'; ctx.fillStyle = '#808080'; }
-      else { ctx.globalCompositeOperation = 'difference'; ctx.fillStyle = '#fff'; }
-      ctx.fillRect(b.x, b.y, b.w, b.h); ctx.restore();
+      ctx.globalCompositeOperation = S.mFenTon === 'nb' ? 'saturation' : 'difference';
+      ctx.fillStyle = S.mFenTon === 'nb' ? '#808080' : '#fff'; ctx.fillRect(b.x, b.y, b.w, b.h);
     }
+    ctx.restore();
     if (S.mFenCadre === 'oui'){
-      ctx.lineWidth = Math.max(1, 1.3 * u); ctx.strokeStyle = pal.forme; ctx.strokeRect(b.x, b.y, b.w, b.h);
-      // Coins de viseur
-      const c = 7 * u, o = 4 * u, q = new Path2D();
-      [[b.x - o, b.y - o, 1, 1], [b.x + b.w + o, b.y - o, -1, 1], [b.x - o, b.y + b.h + o, 1, -1], [b.x + b.w + o, b.y + b.h + o, -1, -1]]
-        .forEach(([x, y, sx, sy]) => { q.moveTo(x + c * sx, y); q.lineTo(x, y); q.lineTo(x, y + c * sy); });
-      ctx.strokeStyle = pal.ligne; ctx.lineWidth = Math.max(0.8, u); ctx.stroke(q);
+      ctx.lineWidth = Math.max(1, 1.4 * u); ctx.strokeStyle = pal.forme; ctx.stroke(path);
+      ctx.lineWidth = Math.max(0.8, u); ctx.strokeStyle = pal.ligne;
+      if (b.shape === 'carre' || b.shape === 'rect'){
+        // Coins de viseur
+        const c = 7 * u, o = 4 * u, q = new Path2D();
+        [[b.x - o, b.y - o, 1, 1], [b.x + b.w + o, b.y - o, -1, 1], [b.x - o, b.y + b.h + o, 1, -1], [b.x + b.w + o, b.y + b.h + o, -1, -1]]
+          .forEach(([x, y, sx, sy]) => { q.moveTo(x + c * sx, y); q.lineTo(x, y); q.lineTo(x, y + c * sy); });
+        ctx.stroke(q);
+      } else { ctx.globalAlpha = 0.6; ctx.stroke(ptsPath(b.P, 1 + 6 * u / Math.min(b.w, b.h), cx, cy)); ctx.globalAlpha = 1; }
     }
-  });
-  // 6. Étiquettes en dernier, pour qu'aucune fenêtre ne les recouvre
-  if (S.mFenLabel === 'oui') placed.forEach((b, k) => {
-    {
+  }
+
+  // 6. Étiquettes en dernier
+  if (S.mFenLabel === 'oui'){
+    const track = src.type === 'video' && S.mSuivi === 'oui';
+    for (const b of placed){
       ctx.fillStyle = pal.forme; ctx.globalAlpha = 0.95;
       const top = b.y - 7 * u > 12 * u;
       ctx.textBaseline = top ? 'bottom' : 'top';
-      ctx.fillText('MEM-' + String(k + 1).padStart(2, '0') + '  ×' + b.z.toFixed(1), b.x, top ? b.y - 7 * u : b.y + b.h + 7 * u);
+      ctx.fillText(b.label + '  ×' + b.z.toFixed(1) + (b.zone && track ? '  SUIVI' : ''), b.x, top ? b.y - 7 * u : b.y + b.h + 7 * u);
       ctx.fillStyle = pal.ligne; ctx.textBaseline = 'top';
       ctx.fillText(pad4(b.ox) + ' ' + pad4(b.oy), b.src.x, Math.min(H - 12 * u, b.src.y + b.src.h + 4 * u));
-      ctx.globalAlpha = 1;
     }
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* ==========================================================
+   17 quater. ZONES CHOISIES À LA MAIN ET SUIVI
+   On trace un rectangle sur l'image ; en vidéo, la zone suit
+   ce qu'elle contient (comparaison de motifs d'une image à l'autre).
+   ========================================================== */
+let ZONES = [], selecting = false, selA = null, selB = null;
+const MAXZ = 6;
+
+function grabTpl(z){
+  if (!GRAY) return;
+  const st = Math.max(1, Math.ceil(Math.max(z.w, z.h) / 24));
+  const tw = Math.max(2, Math.floor(z.w / st)), th = Math.max(2, Math.floor(z.h / st));
+  const tpl = new Float32Array(tw * th), x0 = Math.round(z.x), y0 = Math.round(z.y);
+  for (let j = 0; j < th; j++) for (let i = 0; i < tw; i++) tpl[j * tw + i] = GRAY[clamp(y0 + j * st, 0, AH - 1) * AW + clamp(x0 + i * st, 0, AW - 1)];
+  Object.assign(z, { tpl, tw, th, st });
+}
+function addZone(x, y, w, h){
+  const W = cv.width, H = cv.height;
+  if (ZONES.length >= MAXZ) ZONES.shift();
+  const z = { x: x * AW / W, y: y * AH / H, w: w * AW / W, h: h * AH / H };
+  grabTpl(z); ZONES.push(z);
+  if (S.memoire === 'aucune'){ S.memoire = 'fenetres'; syncUI(); }
+  updateZoneUI(); dirty = true;
+}
+function trackZones(){
+  if (S.mSuivi !== 'oui' || !GRAY || !ZONES.length) return;
+  const R = Math.max(6, Math.round(0.05 * Math.max(AW, AH)));
+  for (const z of ZONES){
+    if (!z.tpl){ grabTpl(z); continue; }
+    const { tpl, tw, th, st } = z, x0 = Math.round(z.x), y0 = Math.round(z.y);
+    const maxX = AW - 1 - (tw - 1) * st, maxY = AH - 1 - (th - 1) * st;
+    const sad = (ox, oy, lim) => {
+      let s = 0;
+      for (let j = 0; j < th; j++){
+        const row = (oy + j * st) * AW + ox, tr = j * tw;
+        for (let i = 0; i < tw; i++) s += Math.abs(GRAY[row + i * st] - tpl[tr + i]);
+        if (s > lim) return s;
+      }
+      return s;
+    };
+    let best = Infinity, bx = x0, by = y0;
+    const test = (ox, oy) => { if (ox < 0 || oy < 0 || ox > maxX || oy > maxY) return; const s = sad(ox, oy, best); if (s < best){ best = s; bx = ox; by = oy; } };
+    for (let dy = -R; dy <= R; dy += 2) for (let dx = -R; dx <= R; dx += 2) test(x0 + dx, y0 + dy);
+    const cx = bx, cy = by;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) test(cx + dx, cy + dy);
+    z.x = bx; z.y = by;
+    // Le motif s'adapte doucement (lumière, angle)
+    for (let j = 0; j < th; j++) for (let i = 0; i < tw; i++){
+      const k = j * tw + i; tpl[k] = tpl[k] * 0.92 + GRAY[(by + j * st) * AW + bx + i * st] * 0.08;
+    }
+  }
+}
+function setSelecting(on){
+  selecting = on; selA = selB = null;
+  cv.style.touchAction = on ? 'none' : '';
+  cv.style.cursor = on ? 'crosshair' : '';
+  const b = $('#zSel'); if (b){ b.classList.toggle('on', on); b.innerHTML = on ? 'Trace sur<br>l’image' : 'Choisir<br>une zone'; }
+  if (on) notify('Trace un rectangle sur l’image avec le doigt.');
+  dirty = true;
+}
+function updateZoneUI(){
+  const i = $('#zInfo'); if (!i) return;
+  i.textContent = ZONES.length ? ZONES.length + ' zone' + (ZONES.length > 1 ? 's' : '') + ' choisie' + (ZONES.length > 1 ? 's' : '') + ' (6 maximum).' : 'Aucune zone : les fenêtres se placent toutes seules.';
+  $('#zUndo').disabled = $('#zClear').disabled = !ZONES.length;
+  refreshDeps();
+}
+function bindZones(){
+  const pos = e => { const r = cv.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width, 0, 1) * cv.width, clamp((e.clientY - r.top) / r.height, 0, 1) * cv.height]; };
+  cv.addEventListener('pointerdown', e => {
+    if (!selecting) return;
+    e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (_){}
+    selA = selB = pos(e); dirty = true;
   });
+  cv.addEventListener('pointermove', e => { if (selecting && selA){ selB = pos(e); dirty = true; } });
+  const end = () => {
+    if (!selecting || !selA) return;
+    const x = Math.min(selA[0], selB[0]), y = Math.min(selA[1], selB[1]), w = Math.abs(selB[0] - selA[0]), h = Math.abs(selB[1] - selA[1]);
+    const min = Math.min(cv.width, cv.height) * 0.03;
+    if (w > min && h > min){ addZone(x, y, w, h); notify('Zone ajoutée.'); setSelecting(false); }
+    else { selA = selB = null; dirty = true; }
+  };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  $('#zSel').addEventListener('click', () => setSelecting(!selecting));
+  $('#zUndo').addEventListener('click', () => { ZONES.pop(); updateZoneUI(); dirty = true; });
+  $('#zClear').addEventListener('click', () => { ZONES = []; updateZoneUI(); dirty = true; });
+  updateZoneUI();
+}
+// Aperçu du rectangle pendant le tracé
+function drawSelection(u, pal){
+  if (!selecting || !selA || !selB) return;
+  const x = Math.min(selA[0], selB[0]), y = Math.min(selA[1], selB[1]), w = Math.abs(selB[0] - selA[0]), h = Math.abs(selB[1] - selA[1]);
+  // Assombrit tout sauf la zone tracée
+  const p = new Path2D(); p.rect(0, 0, cv.width, cv.height); p.rect(x, y, w, h);
+  ctx.save(); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill(p, 'evenodd'); ctx.restore();
+  ctx.setLineDash([4 * u, 3 * u]); ctx.lineWidth = Math.max(1, 1.5 * u); ctx.strokeStyle = pal.ligne; ctx.strokeRect(x, y, w, h); ctx.setLineDash([]);
 }
 
 /* ==========================================================
@@ -1490,7 +1636,7 @@ function drawGrid(W, H, u, pal){
     for (let y = c; y < H - 1; y += c){ p.moveTo(0, y); p.lineTo(W, y); }
     for (let x = 0; x < W; x += c / 4){ const l = (Math.round(x / (c / 4)) % 4 === 0 ? 10 : 5) * u; t.moveTo(x, 0); t.lineTo(x, l); }
     for (let y = 0; y < H; y += c / 4){ const l = (Math.round(y / (c / 4)) % 4 === 0 ? 10 : 5) * u; t.moveTo(0, y); t.lineTo(l, y); }
-    ctx.globalAlpha = a * 0.45; ctx.stroke(p);
+    ctx.lineWidth = Math.max(1, u); ctx.globalAlpha = a * 0.8; ctx.stroke(p);
     ctx.globalAlpha = a; ctx.stroke(t);
     for (let k = 1; k * c < W; k += 2) ctx.fillText(String(k).padStart(2, '0'), k * c + 3 * u, 12 * u);
     ctx.globalAlpha = 1; return;
@@ -1514,8 +1660,8 @@ function drawGrid(W, H, u, pal){
 
 function drawChain(W, H, u, pal, k){
   if (!heroIdx.length) return;
-  const N = 3 + Math.round(S.cNb / 100 * 12), base = (36 + S.cRayon / 100 * 284) * u * (1 + AU.bass * 0.25 * k);
-  const ratio = 0.55 + S.cRatio / 100 * 0.53, ang0 = S.cAngle / 100 * Math.PI;
+  const N = 3 + Math.round(S.cNb / 100 * 12), base = (36 + S.cRayon / 100 * 284) * u * (1 + AU.bass * 0.25 * k) * (S.mouvement === 'pulsation' ? 1 + 0.12 * Math.sin(performance.now() / 1000 * (0.4 + S.vitesse / 100 * 3.2) * 1.6) : 1);
+  const ratio = 0.55 + S.cRatio / 100 * 0.53, ang0 = S.cAngle / 100 * Math.PI * 2;
   const circ = new Path2D(), cross = new Path2D(), chord = new Path2D(), labels = [];
   const dens = (x, y) => {
     if (!MAG) return 0;
@@ -1524,10 +1670,8 @@ function drawChain(W, H, u, pal, k){
   };
   heroIdx.slice(0, 2).forEach((i, n) => {
     if (i < 0 || i >= nP) return;
-    let a = ang0 + n * Math.PI / 2, x = QX[i], y = QY[i];
+    let a = ang0 + n * Math.PI * 0.75, x = QX[i], y = QY[i];
     // On part du côté le plus vide
-    const t1 = dens(x + Math.cos(a) * base * 2, y + Math.sin(a) * base * 2), t2 = dens(x - Math.cos(a) * base * 2, y - Math.sin(a) * base * 2);
-    if (t2 < t1) a += Math.PI;
     const ux = Math.cos(a), uy = Math.sin(a);
     let r = base, cx = x, cy = y;
     const C = [];
@@ -1654,7 +1798,7 @@ function render(now){
       const p = (PL[a] >= 0.99 && PL[b] >= 0.99) ? pf : pl;
       p.moveTo(QX[a], QY[a]); p.lineTo(QX[b], QY[b]);
     }
-    ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.strokeStyle = pal.forme;
+    ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.strokeStyle = pal.ligne;
     ctx.globalAlpha = Math.min(1, 0.6 + aMid * 0.4); ctx.stroke(pf);
     ctx.globalAlpha = 0.22; ctx.stroke(pl);
     ctx.globalAlpha = 1;
@@ -1670,7 +1814,7 @@ function render(now){
     heroIdx.forEach((i, n) => {
       if (i < 0 || i >= nP) return;
       const x = QX[i], y = QY[i], h = hash2(S.seed + 3, PC[i]);
-      const R = (0.06 + h * 0.13) * L * (1 + aBeat * 0.12);
+      const R = (0.06 + h * 0.13) * L * (1 + aBeat * 0.12) * (mv === 'pulsation' ? 1 + 0.15 * Math.sin(t * w + n * 1.3) : 1);
       p.moveTo(x + R, y); p.arc(x, y, R, 0, 6.2832);
       if (n % 2 === 0){ const r2 = R * 0.618; p.moveTo(x + r2, y); p.arc(x, y, r2, 0, 6.2832); }
       for (let s = 0; s < 4; s++){
@@ -1700,7 +1844,7 @@ function render(now){
   }
 
   // 10. Formes (petit / moyen / héros), gonflées par les basses
-  const paths = new Array(12).fill(null);
+  const paths = new Array(24).fill(null);
   const rb = (0.8 + S.taille * 0.06) * u * (1 + aBass * 0.5 + aBeat * 0.35), mul = [1, 1.8, 3.2], fixed = FIXED[S.forme];
   for (let i = 0; i < nP; i++){
     const tier = TIER[i];
@@ -1708,16 +1852,18 @@ function render(now){
     if (fixed !== undefined) type = fixed;
     else type = tier === 2 ? 4 : tier === 1 ? [1, 2, 3][(hash2(S.seed + 7, PC[i]) * 3) | 0] : 5;
     let r = rb * mul[tier], full = PL[i] >= 0.99;
-    if (mv === 'pulsation') r *= 1 + 0.45 * Math.sin(t * w * 1.6 + hash2(S.seed, PC[i]) * 6.2832);
+    if (mv === 'pulsation') r *= Math.max(0.15, 1 + 0.9 * Math.sin(t * w * 1.6 + hash2(S.seed, PC[i]) * 6.2832));
     if (scan){ const b = 1 - Math.abs(QY[i] - scanY) / band; if (b > 0){ r *= 1 + 1.4 * b; full = true; } }
-    const kk = type * 2 + (full ? 0 : 1);
+    const kk = type * 2 + (full ? 0 : 1) + (tier === 1 ? 12 : 0);
     addShape(paths[kk] || (paths[kk] = new Path2D()), type, QX[i], QY[i], Math.max(0.6, r), PTX[i], PTY[i]);
   }
   ctx.lineWidth = Math.max(0.8, lw * 1.2); ctx.strokeStyle = pal.forme; ctx.fillStyle = pal.forme; ctx.lineJoin = 'miter';
-  for (let kk = 0; kk < 12; kk++){
+  for (let kk = 0; kk < 24; kk++){
     if (!paths[kk]) continue;
+    const col = kk >= 12 ? pal.ligne : pal.forme;      // formes moyennes : couleur de la palette
+    ctx.strokeStyle = col; ctx.fillStyle = col;
     ctx.globalAlpha = kk % 2 ? 0.35 : 0.95;
-    if ((kk >> 1) === 5) ctx.fill(paths[kk]); else ctx.stroke(paths[kk]);
+    if (((kk % 12) >> 1) === 5) ctx.fill(paths[kk]); else ctx.stroke(paths[kk]);
   }
   ctx.globalAlpha = 1;
 
@@ -1746,6 +1892,9 @@ function render(now){
 
   // 14. Cadre
   if (S.cadre === 'oui') drawFrame(W, H, u, pal);
+
+  // 15. Aperçu de la zone en cours de tracé
+  drawSelection(u, pal);
 }
 
 function drawFrame(W, H, u, pal){
@@ -1782,6 +1931,7 @@ function loop(now){
       if (!slow || vidFrames % 2 === 0 || needPts || needCont){
         const t0 = performance.now();
         analyzeFrame();
+        trackZones();
         if (personActive() && modelsReady() && (vidFrames % 2 === 0 || v.paused)) runDetection();
         computePoints(!v.paused);
         if (S.contours > 0 || needCont) computeContours();
@@ -1980,7 +2130,8 @@ const OUI_NON = [['oui', 'Oui'], ['non', 'Non']];
 const MEM_ON = () => S.memoire !== 'aucune';
 const MEM_CELLS = () => S.memoire === 'archive' || S.memoire === 'glyphes';
 const MEM_PIX = () => S.memoire === 'archive' || S.memoire === 'glyphes' || S.memoire === 'echo';
-const WIN_ON = () => S.memoire !== 'aucune' && S.mFen > 0;
+const WIN_ON = () => S.memoire !== 'aucune' && (S.mFen > 0 || ZONES.length > 0);
+const AUTO_ON = () => S.memoire !== 'aucune' && S.mAuto === 'oui';
 const SECTIONS = [
   { t: 'Style', key: 'style', items: [
     { html: '<div class="styles" id="styles"></div>' },
@@ -2028,15 +2179,19 @@ const SECTIONS = [
     { seg: 'dFusion', label: 'Fusion', cols: 2, opts: [['normal', 'Normal'], ['produit', 'Produit'], ['ecran', 'Écran'], ['superposition', 'Superposition']], dep: ['dither', 'aucun'] } ] },
   { t: 'Pixel memory', key: 'memoire', badge: 'memoire', items: [
     { html: '<div class="head"><span>Préréglages</span></div><div class="chips" id="memChips"></div>' },
+    { sub: 'Zones choisies et suivi' },
+    { html: '<div class="row3"><button class="btn" id="zSel" type="button">Choisir<br>une zone</button><button class="btn" id="zUndo" type="button">Retirer<br>la dernière</button><button class="btn" id="zClear" type="button">Tout<br>effacer</button></div><p class="note" id="zInfo"></p>' },
+    { seg: 'mSuivi', label: 'Suivre les zones en vidéo', cols: 2, opts: OUI_NON },
+    { seg: 'mAuto', label: 'Fenêtres automatiques en plus', cols: 2, opts: OUI_NON, only: MEM_ON },
     { seg: 'memoire', label: 'Programme', cols: 3, opts: [['aucune', 'Aucun'], ['fenetres', 'Fenêtres'], ['archive', 'Blocs'], ['glyphes', 'Glyphes'], ['echo', 'Écho']] },
     { sub: 'Fenêtres de zoom', only: MEM_ON },
-    { range: 'mFen', label: 'Nombre de fenêtres', min: 0, only: MEM_ON },
-    { range: 'mFenTaille', label: 'Taille des fenêtres', only: WIN_ON },
-    { range: 'mFenVar', label: 'Variation de taille', min: 0, only: WIN_ON },
+    { range: 'mFen', label: 'Nombre de fenêtres automatiques', min: 0, only: AUTO_ON },
+    { range: 'mFenTaille', label: 'Taille des fenêtres automatiques', only: AUTO_ON },
+    { range: 'mFenVar', label: 'Variation de taille', min: 0, only: AUTO_ON },
     { range: 'mZoom', label: 'Zoom', min: 0, only: WIN_ON },
-    { seg: 'mFenForme', label: 'Forme', cols: 3, opts: [['carre', 'Carré'], ['rect', 'Rectangle'], ['mixte', 'Mixte']], only: WIN_ON },
+    { seg: 'mFenForme', label: 'Forme des fenêtres', cols: 3, opts: [['carre', 'Carré'], ['rect', 'Rectangle'], ['rond', 'Rond'], ['hexa', 'Hexagone'], ['losange', 'Losange'], ['mixte', 'Mixte']], only: WIN_ON },
     { seg: 'mFenPlace', label: 'Placement', cols: 3, opts: [['proche', 'Près du point'], ['libre', 'Libre'], ['bord', 'En colonne']], only: WIN_ON },
-    { seg: 'mFenCible', label: 'Origine', cols: 2, opts: [['forts', 'Points forts'], ['hasard', 'Au hasard']], only: WIN_ON },
+    { seg: 'mFenCible', label: 'Origine automatique', cols: 2, opts: [['forts', 'Points forts'], ['hasard', 'Au hasard']], only: AUTO_ON },
     { range: 'mFenPix', label: 'Pixelisation dans les fenêtres', min: 0, only: WIN_ON },
     { seg: 'mFenTon', label: 'Ton des fenêtres', cols: 3, opts: [['photo', 'Photo'], ['nb', 'N et B'], ['inverse', 'Inversé']], only: WIN_ON },
     { sub: 'Liens et repères', only: WIN_ON },
@@ -2260,7 +2415,8 @@ function paintRange(r){
   const v = +r.value, OUT = {
     mNiveaux: () => v >= 100 ? 'MAX' : String(2 + Math.round(v / 100 * 14)),
     mFen: () => String(Math.round(v / 100 * 16)),
-    mZoom: () => '×' + (1 + v / 100 * 3).toFixed(1)
+    mZoom: () => '×' + (1 + v / 100 * 3).toFixed(1),
+    cAngle: () => Math.round(v * 3.6) + '°'
   };
   $('#o-' + r.name).textContent = OUT[r.name] ? OUT[r.name]() : String(v).padStart(3, '0');
 }
@@ -2282,6 +2438,7 @@ function onInput(e){
   if (POINT_KEYS.includes(k)) needPts = true;
   if (CONTOUR_KEYS.includes(k)) needCont = true;
   if (GRID_KEYS.includes(k)) needGrid = true;
+  if (k === 'memoire' && S.memoire === 'fenetres' && S.mFen === 0 && !ZONES.length){ S.mFen = 30; S.mAuto = 'oui'; syncUI(); }
   if (k === 'format') prepareSource();
   if (k === 'palette') applyPalette();
   if (PERSON_KEYS.includes(k)) onPersonChange();
@@ -2372,7 +2529,7 @@ function bindEvents(){
    28. DÉMARRAGE
    ========================================================== */
 function init(){
-  buildPanel(); bindEvents(); bindRail(); syncUI(); makeGrain(); updateAudioUI();
+  buildPanel(); bindEvents(); bindRail(); bindZones(); syncUI(); makeGrain(); updateAudioUI();
   if (!canRecord){
     $('#bVid').disabled = true;
     const n = $('#vidNote'); n.hidden = false;
